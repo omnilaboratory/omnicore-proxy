@@ -1,0 +1,424 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "toolrpc/proto.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "tools"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/GetBalance/{address}": {
+      "get": {
+        "operationId": "tools_GetBalance",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/toolrpcOmniGetbalanceRes"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "mtowceAw2yeftR1pPg15QcsDqsnSik7Spz"
+          },
+          {
+            "name": "propertyId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64",
+            "default": "2147483651"
+          }
+        ],
+        "tags": [
+          "std"
+        ],
+        "externalDocs": {
+          "description": "Returns the token balance for a given address and property.",
+          "url": "https://github.com/OmniLayer/omnicore/blob/master/src/omnicore/doc/rpc-api.md#omni_getbalance"
+        }
+      }
+    },
+    "/api/Mine": {
+      "get": {
+        "summary": "mine three block",
+        "operationId": "tools_Mine",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/toolrpcOmniMineCoinRes"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "tools"
+        ]
+      }
+    },
+    "/api/Propertis": {
+      "get": {
+        "summary": "list all asset",
+        "operationId": "tools_ListProperties",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/toolrpcListPropertiesRes"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "std"
+        ],
+        "externalDocs": {
+          "description": "Lists all tokens or smart properties. \n To get the total number of tokens, please use omni_getproperty.",
+          "url": "https://github.com/OmniLayer/omnicore/blob/master/src/omnicore/doc/rpc-api.md#omni_listproperties"
+        }
+      },
+      "post": {
+        "summary": "create asset  cmd: omni_sendissuancefixed \"mtowceAw2yeftR1pPg15QcsDqsnSik7Spz\" 2 2 0 \"t1\" \"\" \"ftoken\" \"baidu.com\" \"\" 10000000000",
+        "operationId": "tools_CreateProperty",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/toolrpcCreatePropertyRes"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/toolrpcCreatePropertyReq"
+            }
+          }
+        ],
+        "tags": [
+          "std"
+        ],
+        "externalDocs": {
+          "description": "Create new tokens with fixed supply.",
+          "url": "https://github.com/OmniLayer/omnicore/blob/master/src/omnicore/doc/rpc-api.md#omni_sendissuancefixed"
+        }
+      }
+    },
+    "/api/Propertis/{propertyId}": {
+      "get": {
+        "summary": "query  Property",
+        "operationId": "tools_GetProperty",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/toolrpcOmniGetPropertyRes"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "propertyId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64",
+            "default": "2147483651"
+          }
+        ],
+        "tags": [
+          "std"
+        ],
+        "externalDocs": {
+          "description": "Returns the token balance for a given address and property.",
+          "url": "https://github.com/OmniLayer/omnicore/blob/master/src/omnicore/doc/rpc-api.md#omni_getbalance"
+        }
+      }
+    },
+    "/api/SendCoin/{address}": {
+      "get": {
+        "summary": "this command will send user    one bitcoin  and 100 asset, and mine 3 blocks",
+        "operationId": "tools_SendCoin",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/toolrpcOmniSendCoinRes"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "mzP3GRXwkxF9GrfWBj755JP3DoitwjiRs6"
+          },
+          {
+            "name": "assetId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "tools"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "toolrpcCreatePropertyReq": {
+      "type": "object",
+      "properties": {
+        "fromaddress": {
+          "type": "string",
+          "example": "mtowceAw2yeftR1pPg15QcsDqsnSik7Spz",
+          "title": "the address to send from"
+        },
+        "name": {
+          "type": "string",
+          "example": "testToken",
+          "title": "a description for the new tokens (can be \"\")"
+        },
+        "amount": {
+          "type": "string",
+          "example": "100000000",
+          "title": "the number of tokens to create"
+        }
+      }
+    },
+    "toolrpcCreatePropertyRes": {
+      "type": "object",
+      "properties": {
+        "hash": {
+          "type": "string"
+        }
+      }
+    },
+    "toolrpcListPropertiesRes": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/toolrpcProperty"
+          }
+        }
+      }
+    },
+    "toolrpcOmniGetPropertyRes": {
+      "type": "object",
+      "properties": {
+        "propertyid": {
+          "type": "string",
+          "format": "int64",
+          "default": "2147483651"
+        },
+        "name": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "subcategory": {
+          "type": "string"
+        },
+        "data": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "divisible": {
+          "type": "boolean"
+        },
+        "issuer": {
+          "type": "string"
+        },
+        "creationtxid": {
+          "type": "string"
+        },
+        "fixedissuance": {
+          "type": "boolean"
+        },
+        "managedissuance": {
+          "type": "boolean"
+        },
+        "totaltokens": {
+          "type": "string"
+        }
+      },
+      "description": "OmniGetPropertyRes models the data from the Omni-Getbalance command."
+    },
+    "toolrpcOmniGetbalanceRes": {
+      "type": "object",
+      "properties": {
+        "balance": {
+          "type": "string"
+        },
+        "reserved": {
+          "type": "string"
+        },
+        "frozen": {
+          "type": "string"
+        }
+      },
+      "description": "OmniGetPropertyRes models the data from the Omni-Getbalance command."
+    },
+    "toolrpcOmniMineCoinRes": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "string"
+        }
+      }
+    },
+    "toolrpcOmniSendCoinRes": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "string"
+        }
+      }
+    },
+    "toolrpcProperty": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "type": "string",
+          "example": "t1"
+        },
+        "creationtxid": {
+          "type": "string",
+          "example": "b68f903ab36ed023f0c6b7c370b9281d8758d7b3c7835eda4a439018a64fc6d2"
+        },
+        "data": {
+          "type": "string",
+          "example": ""
+        },
+        "delegate": {
+          "type": "string",
+          "example": ""
+        },
+        "divisible": {
+          "type": "boolean",
+          "example": "true"
+        },
+        "fixedissuance": {
+          "type": "boolean",
+          "example": "true"
+        },
+        "issuer": {
+          "type": "string",
+          "example": "mtowceAw2yeftR1pPg15QcsDqsnSik7Spz"
+        },
+        "managedissuance": {
+          "type": "boolean",
+          "example": "false"
+        },
+        "name": {
+          "type": "string",
+          "example": "ftoken"
+        },
+        "nonFungibletoken": {
+          "type": "boolean",
+          "example": "false"
+        },
+        "propertyid": {
+          "type": "string",
+          "format": "int64",
+          "example": 2147483651
+        },
+        "subcategory": {
+          "type": "string",
+          "example": ""
+        },
+        "url": {
+          "type": "string",
+          "example": "baidu.com"
+        }
+      }
+    }
+  }
+}

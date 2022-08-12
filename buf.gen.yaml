@@ -1,0 +1,15 @@
+version: v1
+plugins:
+  - name: go
+    out: .
+    opt: paths=source_relative
+  - name: go-grpc
+    out: .
+    opt: paths=source_relative
+  - name: grpc-gateway
+    out: .
+    opt: paths=source_relative
+  - name: openapiv2
+    out: swagger
+    strategy: all
+    opt: allow_merge=true,merge_file_name=foo,enums_as_ints=true

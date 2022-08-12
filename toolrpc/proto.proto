@@ -1,0 +1,211 @@
+syntax = "proto3";
+package toolrpc;
+option go_package = "om-rpc-tool/toolrpc";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "protoc-gen-openapiv2/options/openapiv2.proto";
+
+// OmniGetbalanceReq defines the OmniGetbalance JSON-RPC command.
+message OmniGetbalanceReq {
+  string address = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
+    default:"mtowceAw2yeftR1pPg15QcsDqsnSik7Spz"
+  }];
+
+  int64 property_id = 2 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
+    default:"2147483651"
+  }];
+}
+
+// OmniGetPropertyRes models the data from the Omni-Getbalance command.
+message OmniGetbalanceRes {
+  string  balance = 1;
+  string   reserved = 2;
+  string    frozen = 3;
+}
+
+// OmniGetPropertyReq defines the omniGetProperty JSON-RPC command.
+message OmniGetPropertyReq {
+  int64 property_id = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
+    default:"2147483651"
+  }];
+}
+
+// OmniGetPropertyRes models the data from the Omni-Getbalance command.
+message OmniGetPropertyRes {
+  int64     propertyid = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
+    default:"2147483651"
+  }];;
+  string  name = 2;
+  string  category = 3;
+  string  subcategory = 4;
+  string  data = 5;
+  string  url = 6;
+  bool    divisible = 7;
+  string  issuer = 8;
+  string  creationtxid = 9;
+  bool    fixedissuance = 10;
+  bool    managedissuance = 11;
+  string  totaltokens = 12;
+}
+
+// OmniGetPropertyReq defines the omniGetProperty JSON-RPC command.
+message OmniSendCoinReq {
+  string address = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
+    default:"mzP3GRXwkxF9GrfWBj755JP3DoitwjiRs6"
+  }];
+  string asset_id =2;
+}
+message OmniSendCoinRes {
+  string result =1;
+}
+
+message OmniMineCoinRes {
+  string result =1;
+}
+
+
+service tools{
+  rpc GetBalance(OmniGetbalanceReq) returns(OmniGetbalanceRes){
+    option (google.api.http) = {
+      get: "/api/GetBalance/{address}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "std";
+      external_docs: {
+        url: "https://github.com/OmniLayer/omnicore/blob/master/src/omnicore/doc/rpc-api.md#omni_getbalance";
+        description: "Returns the token balance for a given address and property.";
+      }
+    };
+  }
+
+// this command will send user    one bitcoin  and 100 asset, and mine 3 blocks
+  rpc SendCoin(OmniSendCoinReq) returns(OmniSendCoinRes){
+    option (google.api.http) = {
+      get: "/api/SendCoin/{address}"
+    };
+  }
+  //mine three block
+  rpc Mine(google.protobuf.Empty) returns(OmniMineCoinRes){
+    option (google.api.http) = {
+      get: "/api/Mine"
+    };
+  }
+  //query  Property
+  rpc GetProperty(OmniGetPropertyReq) returns(OmniGetPropertyRes){
+    option (google.api.http) = {
+      get: "/api/Propertis/{property_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "std";
+      external_docs: {
+        url: "https://github.com/OmniLayer/omnicore/blob/master/src/omnicore/doc/rpc-api.md#omni_getbalance";
+        description: "Returns the token balance for a given address and property.";
+      }
+    };
+  }
+  //list all asset
+  rpc ListProperties(google.protobuf.Empty) returns(ListPropertiesRes){
+    option (google.api.http) = {
+      get: "/api/Propertis"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "std";
+      external_docs: {
+        url: "https://github.com/OmniLayer/omnicore/blob/master/src/omnicore/doc/rpc-api.md#omni_listproperties";
+        description: "Lists all tokens or smart properties. \n To get the total number of tokens, please use omni_getproperty.";
+      }
+    };
+  }
+  //create asset  cmd: omni_sendissuancefixed "mtowceAw2yeftR1pPg15QcsDqsnSik7Spz" 2 2 0 "t1" "" "ftoken" "baidu.com" "" 10000000000
+  rpc CreateProperty(CreatePropertyReq) returns(CreatePropertyRes){
+    option (google.api.http) = {
+      post: "/api/Propertis"
+      body:"*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "std";
+      external_docs: {
+        url: "https://github.com/OmniLayer/omnicore/blob/master/src/omnicore/doc/rpc-api.md#omni_sendissuancefixed";
+        description: "Create new tokens with fixed supply.";
+      }
+    };
+  }
+}
+
+message CreatePropertyReq{
+  //the address to send from
+   string fromaddress=1[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
+     example:"\"mtowceAw2yeftR1pPg15QcsDqsnSik7Spz\"",
+   }];
+   //a description for the new tokens (can be "")
+   string name =2[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
+     example:"\"testToken\"",
+   }];
+   //the number of tokens to create
+   string amount=3[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
+     example:"\"100000000\"",
+   }];
+}
+message CreatePropertyRes{
+    string hash =1;
+}
+
+message ListPropertiesRes {
+  repeated Property items=1;
+}
+message Property {
+
+  string category = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
+    example:"\"t1\"",
+  }];
+
+  string creationtxid = 2 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
+    example:"\"b68f903ab36ed023f0c6b7c370b9281d8758d7b3c7835eda4a439018a64fc6d2\"",
+  }];
+
+  string data = 3 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
+    example:"\"\"",
+  }];
+
+  string delegate = 4 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
+    example:"\"\"",
+  }];
+
+  bool divisible = 5 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
+    example:"\"true\"",
+  }];
+
+  bool fixedissuance = 6 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
+    example:"\"true\"",
+  }];
+
+  string issuer = 7 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
+    example:"\"mtowceAw2yeftR1pPg15QcsDqsnSik7Spz\"",
+  }];
+
+  bool managedissuance = 8 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
+    example:"\"false\"",
+  }];
+
+  string name = 9 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
+    example:"\"ftoken\"",
+  }];
+
+  bool non_fungibletoken = 10 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
+    example:"\"false\"",
+  }];
+
+  int64 propertyid = 11 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
+    example:"2147483651",
+  }];
+
+  string subcategory = 12 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
+    example:"\"\"",
+  }];
+
+  string url = 13 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
+    example:"\"baidu.com\"",
+  }];
+
+}

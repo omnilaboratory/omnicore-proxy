@@ -1,0 +1,6 @@
+version: v1
+name: buf.build/myuser/myrepo
+deps:
+  - buf.build/googleapis/googleapis:264612d2aca446faab191b46c53e00e2
+  - buf.build/grpc-ecosystem/grpc-gateway:00116f302b12478b85deb33b734e026c
+  - buf.build/gogo/protobuf:5461a3dfa9d941da82028ab185dc2a0e
