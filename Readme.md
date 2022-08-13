@@ -1,4 +1,4 @@
-## omnicored fauct api
+## omnicored faucet api
 
 This faucet is for omnicore regtest/testnet only.  
 
