@@ -37,9 +37,12 @@ var whiteListMethods = map[string]bool{
 	"gettransaction":     true,
 	"help":               true,
 	"getbestblock":       true,
-	"sendrawtransaction": true,
+	"getbestblockhash":   true,
+	"getblockhash":       true,
+	"getblockheader":     true,
+	"getblockstats":      true,
 	"getdifficulty":      true,
-
+	"sendrawtransaction": true,
 	// omni
 	"getaddressbalance": true,
 }
