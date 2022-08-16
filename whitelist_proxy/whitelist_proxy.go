@@ -201,9 +201,9 @@ func rawRequest(req *btcjson.Request) ([]byte, error) {
 }
 
 func InlineStrLog(format string, args ...interface{}) {
-	escapeArgs := make([]string, len(args))
+	escapedArgs := make([]string, len(args))
 	for index, arg := range args {
-		escapeArgs[index] = strings.Replace(fmt.Sprintf("%v", arg), "\n", "", -1)
+		escapedArgs[index] = strings.Replace(fmt.Sprintf("%v", arg), "\n", "", -1)
 	}
-	log.Printf(format, args...)
+	log.Printf(format, escapedArgs)
 }

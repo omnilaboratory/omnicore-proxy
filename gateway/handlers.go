@@ -27,11 +27,11 @@ func openAPIServer(dir string) http.HandlerFunc {
 	}
 }
 func InlineStrLog(format string, args ...interface{}) {
-	escapeArgs := make([]string, len(args))
+	escapedArgs := make([]interface{}, len(args))
 	for index, arg := range args {
-		escapeArgs[index] = strings.Replace(fmt.Sprintf("%v", arg), "\n", "", -1)
+		escapedArgs[index] = strings.Replace(fmt.Sprintf("%v", arg), "\n", "", -1)
 	}
-	glog.Errorf(format, args...)
+	glog.Errorf(format, escapedArgs...)
 }
 
 // allowCORS allows Cross Origin Resoruce Sharing from any origin.
