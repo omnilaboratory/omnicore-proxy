@@ -96,7 +96,7 @@ func mainHttpHandler(w http.ResponseWriter, r *http.Request) {
 	if whiteListMethods[req.Method] || strings.HasPrefix(req.Method, "omni_get") || strings.HasPrefix(req.Method, "omni_list") {
 		res, err := rawRequest(&req)
 		if err != nil {
-			log.Printf("rawRequest to btcooind err %v ", err)
+			InlineStrLog("rawRequest to btcooind err %v ", err)
 			http.Error(w, "500 Internal Server Error",
 				http.StatusInternalServerError)
 			return
@@ -108,7 +108,7 @@ func mainHttpHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 	} else {
-		log.Printf("method %v disabled", req.Method)
+		InlineStrLog("method %v disabled", req.Method)
 		http.Error(w, "500 Internal Server Error",
 			http.StatusInternalServerError)
 		return
@@ -171,7 +171,7 @@ func rawRequest(req *btcjson.Request) ([]byte, error) {
 		if backoff > time.Minute {
 			backoff = time.Minute
 		}
-		log.Printf("Failed command [%s] with id %d attempt %d."+
+		InlineStrLog("Failed command [%s] with id %d attempt %d."+
 			" Retrying in %v... \n", req.Method, req.ID,
 			i, backoff)
 
@@ -198,4 +198,12 @@ func rawRequest(req *btcjson.Request) ([]byte, error) {
 		err = fmt.Errorf("error reading json reply: %v", err)
 	}
 	return respBytes, err
+}
+
+func InlineStrLog(format string, args ...interface{}) {
+	escapeArgs := make([]string, len(args))
+	for index, arg := range args {
+		escapeArgs[index] = strings.Replace(fmt.Sprintf("%v", arg), "\n", "", -1)
+	}
+	log.Printf(format, args...)
 }

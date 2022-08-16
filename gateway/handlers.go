@@ -15,16 +15,23 @@ import (
 func openAPIServer(dir string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !strings.HasSuffix(r.URL.Path, ".swagger.json") {
-			glog.Errorf("Not Found: %s", r.URL.Path)
+			InlineStrLog("Not Found: %s", r.URL.Path)
 			http.NotFound(w, r)
 			return
 		}
 
-		glog.Infof("Serving %s", r.URL.Path)
+		InlineStrLog("Serving %s", r.URL.Path)
 		p := strings.TrimPrefix(r.URL.Path, "/openapiv2/")
 		p = path.Join(dir, p)
 		http.ServeFile(w, r, p)
 	}
+}
+func InlineStrLog(format string, args ...interface{}) {
+	escapeArgs := make([]string, len(args))
+	for index, arg := range args {
+		escapeArgs[index] = strings.Replace(fmt.Sprintf("%v", arg), "\n", "", -1)
+	}
+	glog.Errorf(format, args...)
 }
 
 // allowCORS allows Cross Origin Resoruce Sharing from any origin.
