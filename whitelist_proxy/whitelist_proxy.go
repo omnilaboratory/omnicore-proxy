@@ -32,6 +32,7 @@ func main() {
 }
 
 var whiteListMethods = map[string]bool{
+	"getnetworkinfo":     true,
 	"getinfo":            true,
 	"getblockchaininfo":  true,
 	"gettransaction":     true,
