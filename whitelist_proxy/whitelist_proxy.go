@@ -44,7 +44,9 @@ var whiteListMethods = map[string]bool{
 	"getdifficulty":      true,
 	"sendrawtransaction": true,
 	// omni
-	"getaddressbalance": true,
+	"getaddressbalance":     true,
+	"omni_listproperties":   true,
+	"omni_listtransactions": true,
 }
 
 // maxRequestSize specifies the maximum number of bytes in the request body
