@@ -1,6 +1,6 @@
 ## omnicored proxy api
 
-This omnicore proxy is for regtest/testnet only. The mainnet version will be available after omnicore V0.12 is activated.   
+This proxy offers anonymous omnicore services to anonymous users and is currently for regtest/testnet only. The mainnet version will be available after omnicore V0.12 is activated.   
 
 ### main api
 
