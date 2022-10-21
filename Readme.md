@@ -1,6 +1,6 @@
-## omnicored faucet api
+## omnicored proxy api
 
-This faucet is for omnicore regtest/testnet only.  
+This omnicore proxy is for regtest/testnet only. The mainnet version will be available after omnicore V0.12 is activated.   
 
 ### main api
 
