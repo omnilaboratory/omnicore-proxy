@@ -4,12 +4,12 @@ This omnicore proxy is for regtest/testnet only. The mainnet version will be ava
 
 ### main api
 
-* mine
-* send_coin
-* get asset balance
-* list assets
-* query asset
-* create asset  
+* mine: mine blocks, regtest only
+* send_coin: the faucet sending tokens to an address, regtest/testnet only
+* get_asset_balance
+* list_assets
+* query_asset
+* create_asset  
 
 ### swagger doc  
 
