@@ -11,6 +11,8 @@ This proxy offers anonymous omnicore services to anonymous users and is currentl
 * query_asset
 * create_asset  
 
+The complete white-listed interfaces are in: [https://github.com/omnilaboratory/omnicore-proxy/blob/master/whitelist_proxy/whitelist_proxy.go](https://github.com/omnilaboratory/omnicore-proxy/blob/master/whitelist_proxy/whitelist_proxy.go)
+
 ### swagger doc  
 
 http://62.234.169.68:29082/swagger/?surl=http://43.138.107.248:8090/openapiv2/foo.swagger.json  
