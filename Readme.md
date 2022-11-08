@@ -1,6 +1,8 @@
 ## omnicored proxy api
 
-This proxy offers anonymous omnicore services to anonymous users and is currently for regtest/testnet only. The mainnet version will be available after omnicore V0.12 is activated.   
+This proxy offers public anonymous omnicore services to anonymous users and is currently for regtest/testnet only. It acts as the backend of OBD and can be deployed on a remote cloud. The motivation is to decouple the lightning node and the full Bitcoin/Omnilayer node, to lower the barriers of OBD deployment. 
+
+The mainnet version will be available after omnicore V0.12 is activated.   
 
 ### main api
 
