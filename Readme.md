@@ -1,28 +1,40 @@
-## omnicored proxy api
+## omnicored faucet api
 
-This proxy offers public anonymous omnicore services to anonymous users and is currently for regtest/testnet only. It acts as the backend of OBD and can be deployed on a remote cloud. The motivation is to decouple the lightning node and the full Bitcoin/Omnilayer node, to lower the barriers of OBD deployment. 
-
-The mainnet version will be available after omnicore V0.12 is activated.   
+This faucet is for omnicore regtest/testnet only.  
 
 ### main api
 
-* mine: mine blocks, regtest only
-* send_coin: the faucet sending tokens to an address, regtest/testnet only
-* get_asset_balance
-* list_assets
-* query_asset
-* create_asset  
-
-The complete white-listed interfaces are in: [https://github.com/omnilaboratory/omnicore-proxy/blob/master/whitelist_proxy/whitelist_proxy.go](https://github.com/omnilaboratory/omnicore-proxy/blob/master/whitelist_proxy/whitelist_proxy.go)
+* mine
+* send_coin
+* get asset balance
+* list assets
+* query asset
+* create asset  
 
 ### swagger doc  
 
-http://62.234.169.68:29082/swagger/?surl=http://43.138.107.248:8090/openapiv2/foo.swagger.json  
+https://swagger.oblnd.top/?surl=https://faucet.oblnd.top/openapiv2/foo.swagger.json
 
-![swagger preview](https://raw.githubusercontent.com/omnilaboratory/omnicore-fauct-api/master/swagger/img.png "swagger image")  
-
+![swagger preview](https://raw.githubusercontent.com/omnilaboratory/omnicore-fauct-api/master/swagger/img1.png "swagger image")
 
 ### programe start  
 ```
 go run main.go
+```
+
+### pre-created regtest net omnicoreporxy
+web have a pre-created omniproxy-server for regtest
+* server domain: regnet.oblnd.top
+* port: --bitcoin.active --bitcoin.regtest --bitcoin.node=omnicoreproxy --omnicoreproxy.rpchost=regnet.oblnd.top:18332 --omnicoreproxy.zmqpubrawblock=tcp://regnet.oblnd.top:28332 --omnicoreproxy.zmqpubrawtx=tcp://regnet.oblnd.top:28333
+* omnicoreporxy is public prxoy omnicore-backand ,it can be access anonymous.
+* faucet-swager-api: https://swagger.oblnd.top/?surl=https://faucet.oblnd.top/openapiv2/foo.swagger.json
+* omnicoreporxy-server wallet addre ms5u6Wmc8xF8wFBo9w5HFouFNAmnWzkVa6 have enough test-coin to send you.
+* omnicoreporxy have pre-created an asset which id is 2147483651;
+*  the SendCoin api will every invoke will send you 1btc and 100 asset.
+```shell
+#send test coin form curl
+export assetId=2147483651
+curl -X 'GET' \
+  'https://faucet.oblnd.top/api/SendCoin/$a_address?assetId=$assetId' \
+  -H 'accept: application/json'
 ```

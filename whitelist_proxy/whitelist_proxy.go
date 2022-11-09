@@ -36,6 +36,8 @@ var whiteListMethods = map[string]bool{
 	"getinfo":            true,
 	"getblockchaininfo":  true,
 	"gettransaction":     true,
+	"getrawtransaction":  true,
+	"gettxout":           true,
 	"help":               true,
 	"getbestblock":       true,
 	"getbestblockhash":   true,
@@ -44,10 +46,13 @@ var whiteListMethods = map[string]bool{
 	"getblockstats":      true,
 	"getdifficulty":      true,
 	"sendrawtransaction": true,
+	"getblock":           true,
+	"uptime":             true,
 	// omni
 	"getaddressbalance":     true,
 	"omni_listproperties":   true,
 	"omni_listtransactions": true,
+	"omni_getbalance":       true,
 }
 
 // maxRequestSize specifies the maximum number of bytes in the request body
