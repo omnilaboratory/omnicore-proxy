@@ -19,7 +19,12 @@ https://swagger.oblnd.top/?surl=https://faucet.oblnd.top/openapiv2/foo.swagger.j
 
 ### programe start  
 ```
-go run main.go
+#omnicore-proxy-server
+go run whitelist_proxy --btc_host=xx.xx.xx.xx --rpc_user=xx --rpc_passwd=xxx
+
+#faucet-api: 
+go run main.go --btc_host=omnicore-proxy-ip-xx.xx.xx
+
 ```
 
 ### pre-created regtest net omnicoreporxy

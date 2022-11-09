@@ -19,9 +19,9 @@ var rpcUser string
 var rpcPasswd string
 
 func main() {
-	flag.StringVar(&btcHost, "btc_host", "http://43.138.107.248:8332", "http://ip:port")
-	flag.StringVar(&rpcUser, "rpc_user", "omniwallet", "")
-	flag.StringVar(&rpcPasswd, "rpc_passwd", "cB3]iL2@eZ1?cB2?", "")
+	flag.StringVar(&btcHost, "btc_host", "http://localhost:8332", "http://ip:port")
+	flag.StringVar(&rpcUser, "rpc_user", "test", "")
+	flag.StringVar(&rpcPasswd, "rpc_passwd", "test", "")
 	flag.Parse()
 	http.HandleFunc("/", mainHttpHandler)
 	log.Println("server start at :18332")

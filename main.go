@@ -16,14 +16,14 @@ import (
 func main() {
 	var btcHost = ""
 	flag.Set("logtostderr", "true")
-	flag.StringVar(&btcHost, "btc_host", "43.138.107.248:8332", "ip:port")
+	flag.StringVar(&btcHost, "btc_host", "localhost:8332", "ip:port")
 	flag.Parse()
 
 	// Connect to local namecoin core RPC server using HTTP POST mode.
 	connCfg := &rpcclient.ConnConfig{
 		Host:         btcHost,
-		User:         "omniwallet",
-		Pass:         "cB3]iL2@eZ1?cB2?",
+		User:         "test",
+		Pass:         "test",
 		HTTPPostMode: true, // Namecoin core only supports HTTP POST mode
 		DisableTLS:   true, // Namecoin core does not provide TLS by default
 	}
