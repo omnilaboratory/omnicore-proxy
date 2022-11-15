@@ -1,17 +1,20 @@
-## omnicored faucet api
+## omnicored proxy api
 
-This faucet is for omnicore regtest/testnet only.  
+This proxy offers public anonymous omnicore services to anonymous users and is currently for regtest/testnet only. It acts as the backend of OBD and can be deployed on a remote cloud. The motivation is to decouple the lightning node and the full Bitcoin/Omnilayer node, to lower the barriers of OBD deployment. 
 
-### main api
+The mainnet version will be available after omnicore V0.12 is activated.  
 
-* mine
-* send_coin
+The complete white-listed interfaces are in: [https://github.com/omnilaboratory/omnicore-proxy/blob/master/whitelist_proxy/whitelist_proxy.go](https://github.com/omnilaboratory/omnicore-proxy/blob/master/whitelist_proxy/whitelist_proxy.go)
+### faucet api
+
+* mine: mine blocks, regtest only
+* send_coin: the faucet sending tokens to an address, regtest/testnet only
 * get asset balance
 * list assets
 * query asset
 * create asset  
 
-### swagger doc  
+### faucet api swagger doc  
 
 https://swagger.oblnd.top/?surl=https://faucet.oblnd.top/openapiv2/foo.swagger.json
 
