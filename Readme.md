@@ -26,7 +26,7 @@ https://swagger.oblnd.top/?surl=https://faucet.oblnd.top/openapiv2/foo.swagger.j
 go run whitelist_proxy --btc_host=xx.xx.xx.xx --rpc_user=xx --rpc_passwd=xxx
 
 #faucet-api: 
-go run main.go --btc_host=omnicore-proxy-ip-xx.xx.xx
+go run main.go --btc_host=btc_fullnode_ip-xx.xx.xx
 
 ```
 
