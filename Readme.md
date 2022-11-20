@@ -32,15 +32,16 @@ go run main.go --btc_host=btc_fullnode_ip-xx.xx.xx
 
 ```
 
-### pre-created regtest net omnicoreporxy
+### omnicore proxy on Regtest
 web have deployed an omniproxy-server on regtest for developers:
-* server domain: regnet.oblnd.top
-* port: --bitcoin.active --bitcoin.regtest --bitcoin.node=omnicoreproxy --omnicoreproxy.rpchost=regnet.oblnd.top:18332 --omnicoreproxy.zmqpubrawblock=tcp://regnet.oblnd.top:28332 --omnicoreproxy.zmqpubrawtx=tcp://regnet.oblnd.top:28333
-* omnicoreporxy is public prxoy omnicore-backand ,it can be access anonymous.
-* faucet-swager-api: https://swagger.oblnd.top/?surl=https://faucet.oblnd.top/openapiv2/foo.swagger.json
-* omnicoreporxy-server wallet addre ms5u6Wmc8xF8wFBo9w5HFouFNAmnWzkVa6 have enough test-coin to send you.
-* omnicoreporxy have pre-created an asset which id is 2147483651;
-* the SendCoin api will send you 1 btc and 100 asset.  
+* server domain: `regnet.oblnd.top`  
+* port: `--bitcoin.active --bitcoin.regtest --bitcoin.node=omnicoreproxy --omnicoreproxy.rpchost=regnet.oblnd.top:18332 --omnicoreproxy.zmqpubrawblock=tcp://regnet.oblnd.top:28332 --omnicoreproxy.zmqpubrawtx=tcp://regnet.oblnd.top:28333`  
+* omnicore proxy is a public omnicore-backend, it can be accessed anonymously.  
+* faucet-swager-api: `https://swagger.oblnd.top/?surl=https://faucet.oblnd.top/openapiv2/foo.swagger.json`  
+* omnicoreproxy-server wallet address: `ms5u6Wmc8xF8wFBo9w5HFouFNAmnWzkVa6` have enough test-coin to send you. 
+* we issued an asset with id `2147483651` on the faucet.  
+* the SendCoin api will send you 1 btc and 100 tokens(asset ID = 2147483651).  
+
 ```shell
 #send test coin form curl
 export assetId=2147483651
