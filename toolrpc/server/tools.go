@@ -16,10 +16,12 @@ import (
 type RpcServer struct {
 	toolrpc.UnimplementedToolsServer
 	btcClient *rpcclient.Client
+	//regtest testnet mainnet
+	NetType string
 }
 
-func NewRpc(btcClient *rpcclient.Client) *RpcServer {
-	return &RpcServer{btcClient: btcClient}
+func NewRpc(btcClient *rpcclient.Client, netType string) *RpcServer {
+	return &RpcServer{btcClient: btcClient, NetType: netType}
 }
 
 func (s *RpcServer) GetBalance(ctx context.Context, req *toolrpc.OmniGetbalanceReq) (*toolrpc.OmniGetbalanceRes, error) {
@@ -28,7 +30,13 @@ func (s *RpcServer) GetBalance(ctx context.Context, req *toolrpc.OmniGetbalanceR
 }
 
 func (s *RpcServer) SendCoin(ctx context.Context, req *toolrpc.OmniSendCoinReq) (*toolrpc.OmniSendCoinRes, error) {
-	cmdstr := "send_coin.sh %s %s"
+	cmdstr := "scripts/send_coin.sh %s %s"
+	if s.NetType == "regtest" {
+		//this is none docker version ; send_coin.sh invoke the omnicore-cli to sendcoin and mine block
+	} else {
+		//this is docker version ; docker_send_coin.sh invoke the docker's omnicore-cli to sendcoin
+		cmdstr = "scripts/docker/send_coin.sh %s %s"
+	}
 	cmdstr = fmt.Sprintf(cmdstr, req.Address, req.AssetId)
 	log.Println(cmdstr)
 	args := strings.Fields(cmdstr)
@@ -41,6 +49,7 @@ func (s *RpcServer) SendCoin(ctx context.Context, req *toolrpc.OmniSendCoinReq) 
 		err = errors.New(err.Error() + out.String())
 		return nil, err
 	}
+
 	return &toolrpc.OmniSendCoinRes{Result: out.String()}, nil
 }
 func execCmd(cmdstr string) (string, error) {

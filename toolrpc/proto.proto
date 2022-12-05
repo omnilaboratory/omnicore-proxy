@@ -79,13 +79,15 @@ service tools{
     };
   }
 
-// this command will send user    one bitcoin  and 100 asset, and mine 3 blocks
+// for regtest this command will send user one bitcoin  and 100 asset, and mine 3 blocks;
+  // for testnet/mainnet this command will only send user 100 asset
   rpc SendCoin(OmniSendCoinReq) returns(OmniSendCoinRes){
     option (google.api.http) = {
       get: "/api/SendCoin/{address}"
     };
   }
   //mine three block
+  //only for regtest;  testnet or mainnet disabled
   rpc Mine(google.protobuf.Empty) returns(OmniMineCoinRes){
     option (google.api.http) = {
       get: "/api/Mine"
