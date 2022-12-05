@@ -14,16 +14,19 @@ import (
 )
 
 func main() {
-	var btcHost = ""
-	flag.Set("logtostderr", "true")
-	flag.StringVar(&btcHost, "btc_host", "localhost:8332", "ip:port")
+	var omniHost = ""
+	var rpcUser = ""
+	var rpcPasswd = ""
+	flag.Set("alsologtostderr", "true")
+	flag.StringVar(&omniHost, "omni_host", "localhost:8332", "ip:port")
+	flag.StringVar(&rpcUser, "rpc_user", "test", "")
+	flag.StringVar(&rpcPasswd, "rpc_passwd", "test", "")
 	flag.Parse()
-
 	// Connect to local namecoin core RPC server using HTTP POST mode.
 	connCfg := &rpcclient.ConnConfig{
-		Host:         btcHost,
-		User:         "test",
-		Pass:         "test",
+		Host:         omniHost,
+		User:         rpcUser,
+		Pass:         rpcPasswd,
 		HTTPPostMode: true, // Namecoin core only supports HTTP POST mode
 		DisableTLS:   true, // Namecoin core does not provide TLS by default
 	}

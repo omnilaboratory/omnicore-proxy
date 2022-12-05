@@ -147,6 +147,7 @@ func rawRequest(req *btcjson.Request) ([]byte, error) {
 	for i := 0; i < tries; i++ {
 		var httpReq *http.Request
 		bs, err := json.Marshal(req)
+		//log.Println(string(bs))
 		if err != nil {
 			return nil, err
 		}
