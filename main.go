@@ -22,7 +22,7 @@ func main() {
 	flag.StringVar(&omniHost, "omni_host", "localhost:8332", "ip:port")
 	flag.StringVar(&rpcUser, "rpc_user", "test", "")
 	flag.StringVar(&rpcPasswd, "rpc_passwd", "test", "")
-	flag.StringVar(&netType, "net_type", "regtest", "")
+	flag.StringVar(&netType, "net_type", "", "")
 	flag.Parse()
 	// Connect to local namecoin core RPC server using HTTP POST mode.
 	connCfg := &rpcclient.ConnConfig{
@@ -39,7 +39,9 @@ func main() {
 		log.Fatal(err)
 	}
 	defer client.Shutdown()
-
+	if netType == "" {
+		log.Fatalln("miss net_type")
+	}
 	rserver := server.NewRpc(client, netType)
 
 	// Create a listener on TCP port

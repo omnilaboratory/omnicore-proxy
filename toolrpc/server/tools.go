@@ -31,7 +31,7 @@ func (s *RpcServer) GetBalance(ctx context.Context, req *toolrpc.OmniGetbalanceR
 
 func (s *RpcServer) SendCoin(ctx context.Context, req *toolrpc.OmniSendCoinReq) (*toolrpc.OmniSendCoinRes, error) {
 	cmdstr := "scripts/send_coin.sh %s %s"
-	if s.NetType == "regtest" {
+	if s.NetType == "regtest" { //proxy model
 		//this is none docker version ; send_coin.sh invoke the omnicore-cli to sendcoin and mine block
 	} else {
 		//this is docker version ; docker_send_coin.sh invoke the docker's omnicore-cli to sendcoin

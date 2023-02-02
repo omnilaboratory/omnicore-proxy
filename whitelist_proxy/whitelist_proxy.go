@@ -180,7 +180,8 @@ func rawRequest(req *btcjson.Request) ([]byte, error) {
 		if backoff > time.Minute {
 			backoff = time.Minute
 		}
-		InlineStrLog("Failed command [%s] with id %d attempt %d."+
+		log.Println(err)
+		InlineStrLog("Failed command [%s] with id %v attempt %d ."+
 			" Retrying in %v... \n", req.Method, req.ID,
 			i, backoff)
 
