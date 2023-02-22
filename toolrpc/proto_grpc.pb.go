@@ -24,9 +24,11 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ToolsClient interface {
 	GetBalance(ctx context.Context, in *OmniGetbalanceReq, opts ...grpc.CallOption) (*OmniGetbalanceRes, error)
-	// this command will send user    one bitcoin  and 100 asset, and mine 3 blocks
+	// for regtest this command will send user one bitcoin  and 100 asset, and mine 3 blocks;
+	// for testnet/mainnet this command will only send user 100 asset
 	SendCoin(ctx context.Context, in *OmniSendCoinReq, opts ...grpc.CallOption) (*OmniSendCoinRes, error)
 	//mine three block
+	//only for regtest;  testnet or mainnet disabled
 	Mine(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*OmniMineCoinRes, error)
 	//query  Property
 	GetProperty(ctx context.Context, in *OmniGetPropertyReq, opts ...grpc.CallOption) (*OmniGetPropertyRes, error)
@@ -103,9 +105,11 @@ func (c *toolsClient) CreateProperty(ctx context.Context, in *CreatePropertyReq,
 // for forward compatibility
 type ToolsServer interface {
 	GetBalance(context.Context, *OmniGetbalanceReq) (*OmniGetbalanceRes, error)
-	// this command will send user    one bitcoin  and 100 asset, and mine 3 blocks
+	// for regtest this command will send user one bitcoin  and 100 asset, and mine 3 blocks;
+	// for testnet/mainnet this command will only send user 100 asset
 	SendCoin(context.Context, *OmniSendCoinReq) (*OmniSendCoinRes, error)
 	//mine three block
+	//only for regtest;  testnet or mainnet disabled
 	Mine(context.Context, *emptypb.Empty) (*OmniMineCoinRes, error)
 	//query  Property
 	GetProperty(context.Context, *OmniGetPropertyReq) (*OmniGetPropertyRes, error)

@@ -73,7 +73,7 @@ service tools{
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: "std";
       external_docs: {
-        url: "https://github.com/OmniLayer/omnicore/blob/master/src/omnicore/doc/rpc-api.md#omni_getbalance";
+        url: "https://githu以b.com/OmniLayer/omnicore/blob/master/src/omnicore/doc/rpc-api.md#omni_getbalance";
         description: "Returns the token balance for a given address and property.";
       }
     };

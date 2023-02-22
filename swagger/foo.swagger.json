@@ -1,10 +1,13 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "toolrpc/proto.proto",
+    "title": "toolrpc/luckPk.proto",
     "version": "version not set"
   },
   "tags": [
+    {
+      "name": "luckPkApi"
+    },
     {
       "name": "tools"
     }
@@ -55,13 +58,13 @@
         ],
         "externalDocs": {
           "description": "Returns the token balance for a given address and property.",
-          "url": "https://github.com/OmniLayer/omnicore/blob/master/src/omnicore/doc/rpc-api.md#omni_getbalance"
+          "url": "https://githu以b.com/OmniLayer/omnicore/blob/master/src/omnicore/doc/rpc-api.md#omni_getbalance"
         }
       }
     },
     "/api/Mine": {
       "get": {
-        "summary": "mine three block",
+        "summary": "mine three block\nonly for regtest;  testnet or mainnet disabled",
         "operationId": "tools_Mine",
         "responses": {
           "200": {
@@ -183,7 +186,7 @@
     },
     "/api/SendCoin/{address}": {
       "get": {
-        "summary": "this command will send user    one bitcoin  and 100 asset, and mine 3 blocks",
+        "summary": "for regtest this command will send user one bitcoin  and 100 asset, and mine 3 blocks;\nfor testnet/mainnet this command will only send user 100 asset",
         "operationId": "tools_SendCoin",
         "responses": {
           "200": {
@@ -276,6 +279,36 @@
         }
       }
     },
+    "toolrpcListLuckItemRes": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "string",
+          "format": "int64"
+        },
+        "Items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/toolrpcLuckItem"
+          }
+        }
+      }
+    },
+    "toolrpcListLuckPkRes": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "string",
+          "format": "int64"
+        },
+        "Items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/toolrpcLuckPk"
+          }
+        }
+      }
+    },
     "toolrpcListPropertiesRes": {
       "type": "object",
       "properties": {
@@ -286,6 +319,110 @@
           }
         }
       }
+    },
+    "toolrpcLuckItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "luckpkId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "userId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "userAlias": {
+          "type": "string"
+        },
+        "amt": {
+          "type": "string",
+          "format": "int64"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "int64"
+        }
+      },
+      "title": "luckPackage will split to many LuckItem"
+    },
+    "toolrpcLuckPKStatus": {
+      "type": "integer",
+      "format": "int32",
+      "enum": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "default": "0",
+      "title": "- 1: use have pay the LuckPk\n - 2: all balance was consumered"
+    },
+    "toolrpcLuckPk": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "userId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "userAlias": {
+          "type": "string"
+        },
+        "assetId": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "amt": {
+          "type": "string",
+          "format": "uint64",
+          "title": "precision　is 100000000"
+        },
+        "balance": {
+          "type": "string",
+          "format": "uint64",
+          "title": "precision　is 100000000"
+        },
+        "PaymentHash": {
+          "type": "string",
+          "title": "fill on server side"
+        },
+        "parts": {
+          "type": "string",
+          "format": "uint64",
+          "description": "how many times the luckPk can be received. every receive-item save as LuckItem."
+        },
+        "gives": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "status": {
+          "$ref": "#/definitions/toolrpcLuckPKStatus"
+        },
+        "expiredTimeSec": {
+          "type": "string",
+          "format": "int64"
+        },
+        "invoice": {
+          "type": "string",
+          "title": "gen by server"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "int64"
+        },
+        "ErrorCreateMsg": {
+          "type": "string"
+        }
+      },
+      "title": "luckPackage"
     },
     "toolrpcOmniGetPropertyRes": {
       "type": "object",
