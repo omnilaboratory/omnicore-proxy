@@ -556,6 +556,54 @@
           "example": "baidu.com"
         }
       }
+    },
+    "toolrpcSpayStatus": {
+      "type": "integer",
+      "format": "int32",
+      "enum": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "default": "0",
+      "title": "- 1: user have payed service Invoice\n - 2: server have payed to user c"
+    },
+    "toolrpcspay": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "userInvoice": {
+          "type": "string",
+          "title": "user a create,give to b,"
+        },
+        "servInvoice": {
+          "type": "string",
+          "title": "server b gen, user a rcv it and give to c, user c will pay it"
+        },
+        "siPayHash": {
+          "type": "string",
+          "title": "server invoice hash"
+        },
+        "userId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "int64"
+        },
+        "status": {
+          "$ref": "#/definitions/toolrpcSpayStatus"
+        },
+        "errMsg": {
+          "type": "string"
+        }
+      },
+      "title": "spay:  substitution　pay"
     }
   }
 }

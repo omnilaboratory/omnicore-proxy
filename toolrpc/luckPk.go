@@ -86,7 +86,7 @@ func (l *LuckPkServer) MonitorInvoice() {
 					log.Printf("rev invoice : %x %s", invoice.RHash, invoice.State)
 					if invoice.State == lnrpc.Invoice_SETTLED {
 						//spay
-
+						l.updateSpayByInvoide(invoice)
 						//start luckpack
 						updateLuckPkByInvoide(invoice)
 					}
@@ -96,6 +96,47 @@ func (l *LuckPkServer) MonitorInvoice() {
 				log.Println("MonitorInvoice err", serr)
 			}
 			time.Sleep(5 * time.Second)
+		}
+	}
+}
+func (l *LuckPkServer) updateSpayByInvoide(invoice *lnrpc.Invoice) {
+	rhash := hex.EncodeToString(invoice.RHash)
+	sp := &Spay{SiPayHash: rhash}
+	err := db.First(sp, sp).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return
+	} else if err != nil {
+		log.Println("updateSpayByInvoide db err", err)
+		return
+	}
+	if sp.Status == SpayStatus_PayINIT {
+		spState := SpayStatus_PayINIT
+		msg := ""
+		if invoice.State == lnrpc.Invoice_SETTLED {
+			spState = SpayStatus_UserPayed
+		} else if invoice.State == lnrpc.Invoice_CANCELED {
+			spState = SpayStatus_Error
+			msg = "Invoice_CANCELED"
+		} else {
+			return
+		}
+		err = db.Model(sp).Updates(Spay{Status: spState, ErrMsg: msg}).Error
+		if err != nil {
+			log.Println("updateLuckPkByInvoide db err", err)
+			return
+		}
+		//server try pay user invoice, user may offline; when user online can trigger this pay too
+		if sp.Status == SpayStatus_UserPayed {
+			_, err := lndapi.Sendpayment(l.lndCli, l.routerCli, sp.UserInvoice)
+			if err != nil {
+				log.Println("server try pay user invoice err", err)
+				return
+			}
+
+			err = db.Model(sp).Updates(Spay{Status: SpayStatus_PayEnd}).Error
+			if err != nil {
+				return
+			}
 		}
 	}
 }
@@ -246,10 +287,33 @@ func init() {
 		panic("failed to connect database")
 	}
 	// Migrate the schema
-	db.AutoMigrate(&UserNode{}, &LuckPk{}, &LuckItem{}, &HeartBeat{})
+	db.AutoMigrate(&UserNode{}, &LuckPk{}, &LuckItem{}, &HeartBeat{}, Spay{})
 	db = db.Debug()
 }
 
+func (l *LuckPkServer) CreateSpay(ctx context.Context, sy *Spay) (*Spay, error) {
+	userInvoice, err := l.lndCli.DecodePayReq(context.TODO(), &lnrpc.PayReqString{PayReq: sy.UserInvoice})
+	if err != nil {
+		return nil, err
+	}
+
+	//todo check server balance
+
+	amt := userInvoice.Amount
+	if userInvoice.AssetId == 0 {
+		amt = userInvoice.AmtMsat / 1000
+	}
+
+	servInvoice, err := lndapi.AddInvoice(l.lndCli, uint32(userInvoice.AssetId), amt, 1)
+	if err != nil {
+		return nil, err
+	}
+	sy.ServInvoice = servInvoice.PaymentRequest
+	sy.SiPayHash = hex.EncodeToString(servInvoice.RHash)
+	sy.UserId = getCtxUserid(ctx)
+	err = db.Save(sy).Error
+	return sy, err
+}
 func (l *LuckPkServer) GetLuckPkInfo(ctx context.Context, obj *LuckpkIdObj) (*LuckPk, error) {
 	lk := new(LuckPk)
 	err := db.First(lk, "id=?", obj.Id).Error

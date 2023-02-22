@@ -16,6 +16,29 @@ enum LuckPKStatus{
   ErrorCreate=4;
 }
 
+enum SpayStatus{
+  PayINIT=0;
+  //user have payed service Invoice
+  UserPayed=1;
+  //server have payed to user c
+  PayEnd=2;
+  Error=3;
+}
+
+// spay:  substitution　pay
+message spay{
+  int64  id = 1;
+  //user a create,give to b,
+  string user_invoice = 2;
+  // server b gen, user a rcv it and give to c, user c will pay it
+  string serv_invoice = 3;
+  //  server invoice hash
+  string si_payHash = 4;
+  int64 user_id = 5;
+  int64 created_at = 6;
+  SpayStatus status = 7;
+  string err_msg = 8;
+}
 //luckPackage
 message LuckPk{
   int64  id = 1;
@@ -89,6 +112,9 @@ message RegistTlsKeyReq{
 }
 
 service luckPkApi{
+  rpc CreateSpay(spay)returns (spay){
+
+  }
   rpc HeartBeat(stream google.protobuf.Empty)returns(google.protobuf.Empty) {
 
   }
