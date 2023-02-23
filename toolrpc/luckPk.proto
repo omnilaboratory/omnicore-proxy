@@ -28,16 +28,18 @@ enum SpayStatus{
 // spay:  substitution　pay
 message spay{
   int64  id = 1;
-  //user a create,give to b,
+  //user a create invoice,give to b,
   string user_invoice = 2;
-  // server b gen, user a rcv it and give to c, user c will pay it
+  // server b gen invoice, user a rcv it and give to c, user c will pay it
   string serv_invoice = 3;
   //  server invoice hash
   string si_payHash = 4;
+  //  user a id , fill in server side;
   int64 user_id = 5;
   int64 created_at = 6;
   SpayStatus status = 7;
   string err_msg = 8;
+  int64  errTimes=9;
 }
 //luckPackage
 message LuckPk{

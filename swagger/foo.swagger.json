@@ -578,11 +578,11 @@
         },
         "userInvoice": {
           "type": "string",
-          "title": "user a create,give to b,"
+          "title": "user a create invoice,give to b,"
         },
         "servInvoice": {
           "type": "string",
-          "title": "server b gen, user a rcv it and give to c, user c will pay it"
+          "title": "server b gen invoice, user a rcv it and give to c, user c will pay it"
         },
         "siPayHash": {
           "type": "string",
@@ -590,7 +590,8 @@
         },
         "userId": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "title": "user a id , fill in server side;"
         },
         "createdAt": {
           "type": "string",
@@ -601,6 +602,10 @@
         },
         "errMsg": {
           "type": "string"
+        },
+        "errTimes": {
+          "type": "string",
+          "format": "int64"
         }
       },
       "title": "spay:  substitution　pay"

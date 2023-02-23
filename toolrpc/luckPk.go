@@ -99,6 +99,24 @@ func (l *LuckPkServer) MonitorInvoice() {
 		}
 	}
 }
+func (l *LuckPkServer) runUserSpay(userId int64) {
+	spays := []*Spay{}
+	err := db.Find(&spays, "user_id=? and status=?", userId, SpayStatus_UserPayed).Error
+	if err == nil {
+		for _, spay := range spays {
+			_, err := lndapi.Sendpayment(l.lndCli, l.routerCli, spay.UserInvoice)
+			if err != nil {
+				db.Model(spay).Updates(Spay{ErrMsg: err.Error(), ErrTimes: spay.ErrTimes + 1})
+				log.Println("server pay user invoice err", err)
+				return
+			}
+			err = db.Model(spay).Updates(Spay{Status: SpayStatus_PayEnd}).Error
+			if err != nil {
+				return
+			}
+		}
+	}
+}
 func (l *LuckPkServer) updateSpayByInvoide(invoice *lnrpc.Invoice) {
 	rhash := hex.EncodeToString(invoice.RHash)
 	sp := &Spay{SiPayHash: rhash}
@@ -132,7 +150,6 @@ func (l *LuckPkServer) updateSpayByInvoide(invoice *lnrpc.Invoice) {
 				log.Println("server try pay user invoice err", err)
 				return
 			}
-
 			err = db.Model(sp).Updates(Spay{Status: SpayStatus_PayEnd}).Error
 			if err != nil {
 				return
@@ -207,6 +224,7 @@ func (l *LuckPkServer) HeartBeat(recStream LuckPkApi_HeartBeatServer) error {
 	db.First(un, userId)
 	if un.ID > 0 {
 		db.Model(un).Updates(UserNode{Online: 1})
+		l.runUserSpay(userId)
 	}
 	defer func() {
 		hb.OffLineTime = time.Now()
@@ -296,7 +314,6 @@ func (l *LuckPkServer) CreateSpay(ctx context.Context, sy *Spay) (*Spay, error) 
 	if err != nil {
 		return nil, err
 	}
-
 	//todo check server balance
 
 	amt := userInvoice.Amount
