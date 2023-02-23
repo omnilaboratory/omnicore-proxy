@@ -69,6 +69,7 @@ type LuckPkServer struct {
 }
 
 func (l *LuckPkServer) MonitorInvoice() {
+	log.Println("begin MonitorInvoice")
 	for {
 		rs, serr := l.lndCli.SubscribeInvoices(context.TODO(), &lnrpc.InvoiceSubscription{})
 		if serr == nil {
@@ -194,13 +195,24 @@ func NewLuckPkServer(nodeAddress, netType, lndDir string, shudownChan *signal.In
 	if err != nil {
 		panic(err)
 	}
-	////test State
-	//res, err := lserver.lndCli.OB_GetInfo(context.TODO(), &lnrpc.GetInfoRequest{})
-	//log.Println(res, err)
+	//test State
+	res, err := lserver.lndCli.OB_GetInfo(context.TODO(), &lnrpc.GetInfoRequest{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	if !res.SyncedToChain {
+		log.Println("warn: lndCli SyncedToChain status:", res.SyncedToChain)
+	} else {
+		log.Printf("lndCli %v %v SyncedToChain status ok", nodeAddress, netType)
+	}
 	lserver.routerCli, err = lndapi.GetRouterClient(nodeAddress, netType, lndDir)
 	if err != nil {
 		panic(err)
 	}
+
+	go func() {
+		lserver.MonitorInvoice()
+	}()
 	return lserver
 }
 

@@ -116,7 +116,7 @@ func profileFromContext(rpcAddress string, netType string, lndDir string) (
 	// with all the values populated.
 	entry.Macaroons = &macaroonJar{
 		Default: macEntry.Name,
-		Timeout: 60,
+		Timeout: 60 * 60 * 24 * 1000,
 		IP:      "",
 		Jar:     []*macaroonEntry{macEntry},
 	}

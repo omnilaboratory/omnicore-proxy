@@ -32,10 +32,10 @@ func Sendpayment(lcli lnrpc.LightningClient, rcli routerrpc.RouterClient, payReq
 		DestCustomRecords: make(map[uint64][]byte),
 	}
 	invoiceAmt := decodeResp.GetAmtMsat()
-	req.AmtMsat = decodeResp.GetAmtMsat()
+	//req.AmtMsat = decodeResp.GetAmtMsat()
 	if req.AssetId != lnwire.BtcAssetId {
 		invoiceAmt = decodeResp.GetAmount()
-		req.AssetAmt = decodeResp.GetAmount()
+		//req.AssetAmt = decodeResp.GetAmount()
 	}
 
 	// Calculate fee limit based on the determined amount.
@@ -43,8 +43,12 @@ func Sendpayment(lcli lnrpc.LightningClient, rcli routerrpc.RouterClient, payReq
 	req.FeeLimitMsat = feeLimit
 
 	req.NoInflightUpdates = true
+	req.TimeoutSeconds = 5
 	stream, err := rcli.OB_SendPaymentV2(context.TODO(), req)
 	payment, err := stream.Recv()
+	if err != nil {
+		return false, err
+	}
 	return payment.Status != lnrpc.Payment_IN_FLIGHT, err
 }
 
