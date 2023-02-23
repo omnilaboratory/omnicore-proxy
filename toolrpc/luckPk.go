@@ -194,6 +194,7 @@ func NewLuckPkServer(nodeAddress, netType, lndDir string, shudownChan *signal.In
 	if err != nil {
 		panic(err)
 	}
+	////test State
 	//res, err := lserver.lndCli.OB_GetInfo(context.TODO(), &lnrpc.GetInfoRequest{})
 	//log.Println(res, err)
 	lserver.routerCli, err = lndapi.GetRouterClient(nodeAddress, netType, lndDir)
@@ -212,36 +213,42 @@ type HeartBeat struct {
 }
 
 func (l *LuckPkServer) HeartBeat(recStream LuckPkApi_HeartBeatServer) error {
-	userId := getCtxUserid(recStream.Context())
-	hb := &HeartBeat{
-		UserID:    userId,
-		CreatedAt: time.Now(),
-	}
-	db.Save(hb)
-
-	//update online status
-	un := new(UserNode)
-	db.First(un, userId)
-	if un.ID > 0 {
-		db.Model(un).Updates(UserNode{Online: 1})
-		l.runUserSpay(userId)
-	}
-	defer func() {
-		hb.OffLineTime = time.Now()
-		hb.OnlineSecs = int64(time.Now().Sub(hb.CreatedAt).Seconds())
-		db.Save(hb)
-		if un.ID > 0 {
-			db.Model(un).Updates(UserNode{Online: 2})
+	select {
+	//if shutdown, new stream-connect will skip
+	case <-l.shudownChan.ShutdownChannel():
+		return errors.New("server is shudowning")
+	default:
+		userId := getCtxUserid(recStream.Context())
+		hb := &HeartBeat{
+			UserID:    userId,
+			CreatedAt: time.Now(),
 		}
-	}()
-	for {
-		select {
-		case <-l.shudownChan.ShutdownChannel():
-			return nil
-		default:
-			_, err := recStream.Recv()
-			if err != nil {
-				return err
+		db.Save(hb)
+
+		//update online status
+		un := new(UserNode)
+		db.First(un, userId)
+		if un.ID > 0 {
+			db.Model(un).Updates(UserNode{Online: 1})
+			l.runUserSpay(userId)
+		}
+		defer func() {
+			hb.OffLineTime = time.Now()
+			hb.OnlineSecs = int64(time.Now().Sub(hb.CreatedAt).Seconds())
+			db.Save(hb)
+			if un.ID > 0 {
+				db.Model(un).Updates(UserNode{Online: 2})
+			}
+		}()
+		for {
+			select {
+			case <-l.shudownChan.ShutdownChannel():
+				return nil
+			default:
+				_, err := recStream.Recv()
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -289,6 +296,7 @@ func (l *LuckPkServer) RegistTlsKey(ctx context.Context, obj *RegistTlsKeyReq) (
 
 	un.TlsPubKey = tlsPubKey
 	un.UserIdKey = userIdKey
+	un.Alias = obj.Alias
 	err = db.Save(un).Error
 	if err != nil {
 		return &emptypb.Empty{}, err

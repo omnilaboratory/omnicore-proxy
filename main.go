@@ -117,7 +117,7 @@ func main() {
 	<-shutdownChan.ShutdownChannel()
 
 	//sleep 3 second, for some go routine which depend  shutdownChan to complete database op.
-	time.Sleep(3 * time.Second)
+	time.Sleep(23 * time.Second)
 	log.Println("done shutdown")
 
 	//simpest
