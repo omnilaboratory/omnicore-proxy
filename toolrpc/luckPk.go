@@ -71,8 +71,9 @@ type LuckPkServer struct {
 func (l *LuckPkServer) MonitorInvoice() {
 	log.Println("begin MonitorInvoice")
 	for {
-		rs, serr := l.lndCli.SubscribeInvoices(context.TODO(), &lnrpc.InvoiceSubscription{})
+		rs, serr := l.lndCli.SubscribeInvoices(context.TODO(), &lnrpc.InvoiceSubscription{AddIndex: 1000000})
 		if serr == nil {
+			log.Println("MonitorInvoice with clientid")
 		LOOP:
 			for {
 				select {
@@ -242,6 +243,7 @@ func (l *LuckPkServer) HeartBeat(recStream LuckPkApi_HeartBeatServer) error {
 		db.First(un, userId)
 		if un.ID > 0 {
 			db.Model(un).Updates(UserNode{Online: 1})
+			log.Printf("trigger user spay %v %v", un.ID, un.UserIdKey)
 			l.runUserSpay(userId)
 		}
 		defer func() {
