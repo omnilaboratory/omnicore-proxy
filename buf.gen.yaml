@@ -1,5 +1,11 @@
 version: v1
 plugins:
+#  - name: java
+#    out: ./java
+##    opt: paths=source_relative
+#  - name: grpc-java
+#    out: ./java
+#    opt: paths=source_relative
   - name: go
     out: .
     opt: paths=source_relative

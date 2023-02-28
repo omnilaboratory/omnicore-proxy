@@ -9,6 +9,7 @@ import (
 	"github.com/btcsuite/btcd/btcec"
 	"github.com/lightningnetwork/lnd/lnrpc"
 	"github.com/lightningnetwork/lnd/lnrpc/routerrpc"
+	"google.golang.org/grpc/peer"
 	"om-rpc-tool/lndapi"
 	"om-rpc-tool/signal"
 
@@ -16,7 +17,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"log"
 	"strconv"
@@ -56,6 +57,7 @@ type UserNode struct {
 	TlsPubKeyPre string `gorm:"index"`
 	UserIdKey    string
 	Alias        string
+	IpAddress    string
 }
 
 type LuckPkServer struct {
@@ -73,7 +75,7 @@ func (l *LuckPkServer) MonitorInvoice() {
 	for {
 		rs, serr := l.lndCli.SubscribeInvoices(context.TODO(), &lnrpc.InvoiceSubscription{AddIndex: 1000000})
 		if serr == nil {
-			log.Println("MonitorInvoice with clientid")
+			log.Println("MonitorInvoice begin Subscribe")
 		LOOP:
 			for {
 				select {
@@ -220,21 +222,28 @@ func NewLuckPkServer(nodeAddress, netType, lndDir string, shudownChan *signal.In
 type HeartBeat struct {
 	ID          uint `gorm:"primarykey"`
 	CreatedAt   time.Time
-	OffLineTime time.Time
+	OffLineTime *time.Time
 	OnlineSecs  int64
 	UserID      int64
+	IpAddress   string
 }
 
 func (l *LuckPkServer) HeartBeat(recStream LuckPkApi_HeartBeatServer) error {
 	select {
 	//if shutdown, new stream-connect will skip
 	case <-l.shudownChan.ShutdownChannel():
-		return errors.New("server is shudowning")
+		return errors.New("server is shutdowning")
 	default:
 		userId := getCtxUserid(recStream.Context())
+		addre := ""
+		p, ok := peer.FromContext(recStream.Context())
+		if ok {
+			addre = p.Addr.String()
+		}
 		hb := &HeartBeat{
 			UserID:    userId,
 			CreatedAt: time.Now(),
+			IpAddress: addre,
 		}
 		db.Save(hb)
 
@@ -242,12 +251,13 @@ func (l *LuckPkServer) HeartBeat(recStream LuckPkApi_HeartBeatServer) error {
 		un := new(UserNode)
 		db.First(un, userId)
 		if un.ID > 0 {
-			db.Model(un).Updates(UserNode{Online: 1})
+			db.Model(un).Updates(UserNode{Online: 1, IpAddress: addre})
 			log.Printf("trigger user spay %v %v", un.ID, un.UserIdKey)
 			l.runUserSpay(userId)
 		}
 		defer func() {
-			hb.OffLineTime = time.Now()
+			now := time.Now()
+			hb.OffLineTime = &now
 			hb.OnlineSecs = int64(time.Now().Sub(hb.CreatedAt).Seconds())
 			db.Save(hb)
 			if un.ID > 0 {
@@ -320,9 +330,12 @@ func (l *LuckPkServer) RegistTlsKey(ctx context.Context, obj *RegistTlsKeyReq) (
 
 var db *gorm.DB
 
-func init() {
+func InitDb(connstr string) {
 	var err error
-	db, err = gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+	//db, err = gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+	db, err = gorm.Open(mysql.New(mysql.Config{
+		DSN: connstr,
+	}), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}

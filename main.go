@@ -29,6 +29,7 @@ func main() {
 	var enableLuckServer = false
 	var lnddir = "false"
 	var nodeAddress = "false"
+	var dbConnstr = ""
 	flag.Set("alsologtostderr", "true")
 	flag.StringVar(&omniHost, "omni_host", "localhost:8332", "ip:port")
 	flag.StringVar(&rpcUser, "rpc_user", "test", "")
@@ -38,6 +39,7 @@ func main() {
 	flag.BoolVar(&enableLuckServer, "enable_luck_server", false, "tls cert dir")
 	flag.StringVar(&lnddir, "lnddir", "", "lnddir contain macaroon-asset for connect oblndNode ")
 	flag.StringVar(&nodeAddress, "node_address", "localhost:10001", "oblndNode grpc address")
+	flag.StringVar(&dbConnstr, "db_conn", "localhost:10001", "mysql connstr : user:password@tcp(127.0.0.1:3306)/db?charset=utf8&parseTime=True&loc=Local")
 	flag.Parse()
 	// Connect to local namecoin core RPC server using HTTP POST mode.
 	connCfg := &rpcclient.ConnConfig{
@@ -61,7 +63,11 @@ func main() {
 		os.MkdirAll(certDir, os.ModePerm)
 	}
 	shutdownChan, err := signal.Intercept()
+
 	if enableLuckServer {
+		if dbConnstr != "" {
+			toolrpc.InitDb(dbConnstr)
+		}
 		if len(lnddir) == 0 {
 			log.Fatalln("miss lnddir")
 		}
