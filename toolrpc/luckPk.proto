@@ -63,7 +63,7 @@ message LuckPk{
   int64 created_at = 11;
   string ErrorCreateMsg = 14;
 }
-//luckPackage will split to many LuckItem
+//luckPackage will split to many LuckItem,one user one record
 message LuckItem{
   int64  id = 1;
   int64 luckpk_id = 2;
@@ -71,6 +71,17 @@ message LuckItem{
   string user_alias = 4;
   int64 amt = 5;
   int64 created_at = 6;
+  Status status=7;
+  string ErrMsg=8;
+  enum Status{
+    UNKNOWN=0;
+    //server is paying user invoice
+    PAYING=1;
+    //server have paying user invoice
+    PAYED=2;
+    Error=3;
+  }
+
 }
 message CreateLuckPkRes{
   //luckpk id

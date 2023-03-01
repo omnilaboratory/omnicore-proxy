@@ -32,7 +32,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/rpcStatus"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -76,7 +76,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/rpcStatus"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -99,7 +99,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/rpcStatus"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -124,7 +124,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/rpcStatus"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -161,7 +161,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/rpcStatus"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -198,7 +198,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/rpcStatus"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -224,16 +224,7 @@
     }
   },
   "definitions": {
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "@type": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": {}
-    },
-    "rpcStatus": {
+    "googlerpcStatus": {
       "type": "object",
       "properties": {
         "code": {
@@ -250,6 +241,15 @@
           }
         }
       }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
     },
     "toolrpcCreatePropertyReq": {
       "type": "object",
@@ -345,9 +345,27 @@
         "createdAt": {
           "type": "string",
           "format": "int64"
+        },
+        "status": {
+          "$ref": "#/definitions/toolrpcLuckItemStatus"
+        },
+        "ErrMsg": {
+          "type": "string"
         }
       },
-      "title": "luckPackage will split to many LuckItem"
+      "title": "luckPackage will split to many LuckItem,one user one record"
+    },
+    "toolrpcLuckItemStatus": {
+      "type": "integer",
+      "format": "int32",
+      "enum": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "default": "0",
+      "title": "- 1: server is paying user invoice\n - 2: server have paying user invoice"
     },
     "toolrpcLuckPKStatus": {
       "type": "integer",

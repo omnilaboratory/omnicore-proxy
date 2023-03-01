@@ -10,6 +10,7 @@ import (
 	"github.com/lightningnetwork/lnd/lnrpc"
 	"github.com/lightningnetwork/lnd/lnrpc/routerrpc"
 	"google.golang.org/grpc/peer"
+	"gorm.io/driver/sqlite"
 	"om-rpc-tool/lndapi"
 	"om-rpc-tool/signal"
 
@@ -17,7 +18,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"gorm.io/driver/mysql"
+	//"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"log"
 	"strconv"
@@ -332,10 +333,10 @@ var db *gorm.DB
 
 func InitDb(connstr string) {
 	var err error
-	//db, err = gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
-	db, err = gorm.Open(mysql.New(mysql.Config{
-		DSN: connstr,
-	}), &gorm.Config{})
+	db, err = gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+	//db, err = gorm.Open(mysql.New(mysql.Config{
+	//	DSN: connstr,
+	//}), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
@@ -428,9 +429,21 @@ func (l *LuckPkServer) GiveLuckPk(ctx context.Context, req *GiveLuckPkReq) (*emp
 	if lk.Status != LuckPKStatus_WorkIng {
 		return nil, errors.New(fmt.Sprintf("luckPacket status is %s %s", lk.Status, lk.ErrorCreateMsg))
 	}
-
 	if lk.Gives >= lk.Parts {
 		return nil, errors.New(fmt.Sprintf("exceed　luckPacket parts,the max part is %v", lk.Parts))
+	}
+	//one user one LuckItem
+	litem := new(LuckItem)
+	litem.UserId = getCtxUserid(ctx)
+	litem.LuckpkId = req.Id
+	err = db.First(litem, litem).Error
+	if err == nil {
+		if litem.Status == LuckItem_PAYING {
+			return nil, errors.New(fmt.Sprintf("your luckPacket is paying"))
+		}
+		if litem.Status == LuckItem_PAYED {
+			return nil, errors.New(fmt.Sprintf("v luckPacket have payed one times"))
+		}
 	}
 	var (
 		amt = int64(0)
@@ -451,19 +464,22 @@ func (l *LuckPkServer) GiveLuckPk(ctx context.Context, req *GiveLuckPkReq) (*emp
 	if lk.AssetId != uint64(payreq.AssetId) {
 		return nil, fmt.Errorf("missmatch assetid %v %v", payreq.AssetId, lk.AssetId)
 	}
-	//pay
 
+	//pay
+	litem.Status = LuckItem_PAYING
+	litem.Amt = int64(amt)
+	db.Save(litem)
 	_, err = lndapi.Sendpayment(l.lndCli, l.routerCli, req.Invoice)
 	if err != nil {
 		log.Println("Sendpayment err:", err)
+		litem.Status = LuckItem_Error
+		litem.ErrMsg = err.Error()
+		db.Save(litem)
 		return nil, err
 	}
 
 	//pk ok
-	litem := new(LuckItem)
-	litem.UserId = getCtxUserid(ctx)
-	litem.LuckpkId = req.Id
-	litem.Amt = int64(amt)
+	litem.Status = LuckItem_PAYED
 	db.Save(litem)
 
 	lk.Gives += 1
