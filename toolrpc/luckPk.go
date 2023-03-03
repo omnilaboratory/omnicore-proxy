@@ -418,11 +418,11 @@ func (l *LuckPkServer) startupLuckPk(ctx context.Context, pk *LuckPk) (*LuckPk, 
 var payLock sync.Mutex
 
 func (l *LuckPkServer) GiveLuckPk(ctx context.Context, req *GiveLuckPkReq) (*emptypb.Empty, error) {
-	log.Println(" GiveLuckPk process begin")
+	log.Println(" GiveLuckyPk process begin")
 	payLock.Lock()
 	defer func() {
 		payLock.Unlock()
-		log.Println(" GiveLuckPk end :", req.Id)
+		log.Println(" GiveLuckyPk end :", req.Id)
 	}()
 	lk := new(LuckPk)
 	err := db.First(lk, "id=?", req.Id).Error
@@ -431,13 +431,13 @@ func (l *LuckPkServer) GiveLuckPk(ctx context.Context, req *GiveLuckPkReq) (*emp
 	}
 	userId := getCtxUserid(ctx)
 
-	log.Printf(" GiveLuckPk begin lkid: %v, userId: %v ", req.Id, userId)
+	log.Printf(" GiveLuckyPk begin lkid: %v, userId: %v ", req.Id, userId)
 
 	if lk.Status != LuckPKStatus_WorkIng {
-		return nil, errors.New(fmt.Sprintf("luckPacket status is %s %s", lk.Status, lk.ErrorCreateMsg))
+		return nil, errors.New(fmt.Sprintf("luckyPacket status is %s %s", lk.Status, lk.ErrorCreateMsg))
 	}
 	if lk.Gives >= lk.Parts {
-		return nil, errors.New(fmt.Sprintf("exceed　luckPacket parts,the max part is %v", lk.Parts))
+		return nil, errors.New(fmt.Sprintf("Exceeded the total number of lucky packets, the total is %v", lk.Parts))
 	}
 	//one user one LuckItem
 	litem := new(LuckItem)
@@ -446,10 +446,10 @@ func (l *LuckPkServer) GiveLuckPk(ctx context.Context, req *GiveLuckPkReq) (*emp
 	err = db.First(litem, litem).Error
 	if err == nil {
 		if litem.Status == LuckItem_PAYING {
-			return nil, errors.New(fmt.Sprintf("your luckPacket is paying"))
+			return nil, errors.New(fmt.Sprintf("your lucky packet is being paid, please wait a moment."))
 		}
 		if litem.Status == LuckItem_PAYED {
-			return nil, errors.New(fmt.Sprintf("your luckPacket have payed one times"))
+			return nil, errors.New(fmt.Sprintf("You have already received the lucky packet, you cannot claim it twice."))
 		}
 	}
 	var (
@@ -467,7 +467,7 @@ func (l *LuckPkServer) GiveLuckPk(ctx context.Context, req *GiveLuckPkReq) (*emp
 	}
 	//veryfy lk
 	if int64(lk.Balance)-amt < 0 {
-		return nil, errors.New("luckPackge balance insufficient")
+		return nil, errors.New("luckyPackge balance is insufficient")
 	}
 	if lk.AssetId != uint64(payreq.AssetId) {
 		return nil, fmt.Errorf("missmatch assetid %v %v", payreq.AssetId, lk.AssetId)
