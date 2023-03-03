@@ -10,7 +10,7 @@ import (
 	"github.com/lightningnetwork/lnd/lnrpc"
 	"github.com/lightningnetwork/lnd/lnrpc/routerrpc"
 	"google.golang.org/grpc/peer"
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/mysql"
 	"om-rpc-tool/lndapi"
 	"om-rpc-tool/signal"
 
@@ -333,10 +333,10 @@ var db *gorm.DB
 
 func InitDb(connstr string) {
 	var err error
-	db, err = gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
-	//db, err = gorm.Open(mysql.New(mysql.Config{
-	//	DSN: connstr,
-	//}), &gorm.Config{})
+	//db, err = gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+	db, err = gorm.Open(mysql.New(mysql.Config{
+		DSN: connstr,
+	}), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
@@ -418,13 +418,20 @@ func (l *LuckPkServer) startupLuckPk(ctx context.Context, pk *LuckPk) (*LuckPk, 
 var payLock sync.Mutex
 
 func (l *LuckPkServer) GiveLuckPk(ctx context.Context, req *GiveLuckPkReq) (*emptypb.Empty, error) {
+	log.Println(" GiveLuckPk process begin")
 	payLock.Lock()
-	defer payLock.Unlock()
+	defer func() {
+		payLock.Unlock()
+		log.Println(" GiveLuckPk end :", req.Id)
+	}()
 	lk := new(LuckPk)
 	err := db.First(lk, "id=?", req.Id).Error
 	if err != nil {
 		return nil, err
 	}
+	userId := getCtxUserid(ctx)
+
+	log.Printf(" GiveLuckPk begin lkid: %v, userId: %v ", req.Id, userId)
 
 	if lk.Status != LuckPKStatus_WorkIng {
 		return nil, errors.New(fmt.Sprintf("luckPacket status is %s %s", lk.Status, lk.ErrorCreateMsg))
@@ -442,7 +449,7 @@ func (l *LuckPkServer) GiveLuckPk(ctx context.Context, req *GiveLuckPkReq) (*emp
 			return nil, errors.New(fmt.Sprintf("your luckPacket is paying"))
 		}
 		if litem.Status == LuckItem_PAYED {
-			return nil, errors.New(fmt.Sprintf("v luckPacket have payed one times"))
+			return nil, errors.New(fmt.Sprintf("your luckPacket have payed one times"))
 		}
 	}
 	var (
@@ -451,6 +458,7 @@ func (l *LuckPkServer) GiveLuckPk(ctx context.Context, req *GiveLuckPkReq) (*emp
 	// decode
 	payreq, err := l.lndCli.DecodePayReq(context.TODO(), &lnrpc.PayReqString{PayReq: req.Invoice})
 	if err != nil {
+		log.Println("GiveLuckPk DecodePayReq err:", err)
 		return nil, err
 	}
 	amt = payreq.Amount
