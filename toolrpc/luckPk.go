@@ -467,7 +467,10 @@ func (l *LuckPkServer) GiveLuckPk(ctx context.Context, req *GiveLuckPkReq) (*emp
 	}
 	//veryfy lk
 	if int64(lk.Balance)-amt < 0 {
-		return nil, errors.New("luckPackge balance insufficient")
+		return nil, errors.New("luck packge balance insufficient")
+	}
+	if lk.Balance/lk.Parts-uint64(amt) < 0 {
+		return nil, errors.New("single withdrawal amount exceeds")
 	}
 	if lk.AssetId != uint64(payreq.AssetId) {
 		return nil, fmt.Errorf("missmatch assetid %v %v", payreq.AssetId, lk.AssetId)
