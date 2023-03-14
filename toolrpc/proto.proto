@@ -5,6 +5,7 @@ import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 import "protoc-gen-openapiv2/options/openapiv2.proto";
+import "google/api/field_behavior.proto";
 
 // OmniGetbalanceReq defines the OmniGetbalance JSON-RPC command.
 message OmniGetbalanceReq {
@@ -13,8 +14,9 @@ message OmniGetbalanceReq {
   }];
 
   int64 property_id = 2 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
-    default:"2147483651"
-  }];
+    description: "testnet 2147485160 ;regnet 2147483651 ";
+    default:"";
+  }, (google.api.field_behavior) = REQUIRED];
 }
 
 // OmniGetPropertyRes models the data from the Omni-Getbalance command.
@@ -27,8 +29,10 @@ message OmniGetbalanceRes {
 // OmniGetPropertyReq defines the omniGetProperty JSON-RPC command.
 message OmniGetPropertyReq {
   int64 property_id = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
-    default:"2147483651"
-  }];
+    description: "testnet 2147485160 ;regnet 2147483651 ";
+    default:"";
+    enum:["2147485160","2147483651"];
+  }, (google.api.field_behavior) = REQUIRED];
 }
 
 // OmniGetPropertyRes models the data from the Omni-Getbalance command.
@@ -54,7 +58,10 @@ message OmniSendCoinReq {
   string address = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
     default:"mzP3GRXwkxF9GrfWBj755JP3DoitwjiRs6"
   }];
-  string asset_id =2;
+  string asset_id =2 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
+    description: "testnet 2147485160 ;regnet 2147483651 ";
+    default:"";
+  }, (google.api.field_behavior) = REQUIRED];
 }
 message OmniSendCoinRes {
   string result =1;
@@ -103,7 +110,7 @@ service tools{
       external_docs: {
         url: "https://github.com/OmniLayer/omnicore/blob/master/src/omnicore/doc/rpc-api.md#omni_getbalance";
         description: "Returns the token balance for a given address and property.";
-      }
+      };
     };
   }
   //list all asset

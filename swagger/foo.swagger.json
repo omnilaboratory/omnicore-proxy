@@ -1,13 +1,10 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "toolrpc/luckPk.proto",
+    "title": "toolrpc/proto.proto",
     "version": "version not set"
   },
   "tags": [
-    {
-      "name": "luckPkApi"
-    },
     {
       "name": "tools"
     }
@@ -32,7 +29,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -46,11 +43,11 @@
           },
           {
             "name": "propertyId",
+            "description": "testnet 2147485160 ;regnet 2147483651 ",
             "in": "query",
-            "required": false,
+            "required": true,
             "type": "string",
-            "format": "int64",
-            "default": "2147483651"
+            "format": "int64"
           }
         ],
         "tags": [
@@ -76,7 +73,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -99,7 +96,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -124,7 +121,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -161,18 +158,18 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
         "parameters": [
           {
             "name": "propertyId",
+            "description": "testnet 2147485160 ;regnet 2147483651 ",
             "in": "path",
             "required": true,
             "type": "string",
-            "format": "int64",
-            "default": "2147483651"
+            "format": "int64"
           }
         ],
         "tags": [
@@ -198,7 +195,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -212,8 +209,9 @@
           },
           {
             "name": "assetId",
+            "description": "testnet 2147485160 ;regnet 2147483651 ",
             "in": "query",
-            "required": false,
+            "required": true,
             "type": "string"
           }
         ],
@@ -224,7 +222,16 @@
     }
   },
   "definitions": {
-    "googlerpcStatus": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
       "type": "object",
       "properties": {
         "code": {
@@ -241,15 +248,6 @@
           }
         }
       }
-    },
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "@type": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": {}
     },
     "toolrpcCreatePropertyReq": {
       "type": "object",
@@ -279,36 +277,6 @@
         }
       }
     },
-    "toolrpcListLuckItemRes": {
-      "type": "object",
-      "properties": {
-        "count": {
-          "type": "string",
-          "format": "int64"
-        },
-        "Items": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/toolrpcLuckItem"
-          }
-        }
-      }
-    },
-    "toolrpcListLuckPkRes": {
-      "type": "object",
-      "properties": {
-        "count": {
-          "type": "string",
-          "format": "int64"
-        },
-        "Items": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/toolrpcLuckPk"
-          }
-        }
-      }
-    },
     "toolrpcListPropertiesRes": {
       "type": "object",
       "properties": {
@@ -319,128 +287,6 @@
           }
         }
       }
-    },
-    "toolrpcLuckItem": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "format": "int64"
-        },
-        "luckpkId": {
-          "type": "string",
-          "format": "int64"
-        },
-        "userId": {
-          "type": "string",
-          "format": "int64"
-        },
-        "userAlias": {
-          "type": "string"
-        },
-        "amt": {
-          "type": "string",
-          "format": "int64"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "int64"
-        },
-        "status": {
-          "$ref": "#/definitions/toolrpcLuckItemStatus"
-        },
-        "ErrMsg": {
-          "type": "string"
-        }
-      },
-      "title": "luckPackage will split to many LuckItem,one user one record"
-    },
-    "toolrpcLuckItemStatus": {
-      "type": "integer",
-      "format": "int32",
-      "enum": [
-        "0",
-        "1",
-        "2",
-        "3"
-      ],
-      "default": "0",
-      "title": "- 1: server is paying user invoice\n - 2: server have paying user invoice"
-    },
-    "toolrpcLuckPKStatus": {
-      "type": "integer",
-      "format": "int32",
-      "enum": [
-        "0",
-        "1",
-        "2",
-        "3",
-        "4"
-      ],
-      "default": "0",
-      "title": "- 1: use have pay the LuckPk\n - 2: all balance was consumered"
-    },
-    "toolrpcLuckPk": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "format": "int64"
-        },
-        "userId": {
-          "type": "string",
-          "format": "int64"
-        },
-        "userAlias": {
-          "type": "string"
-        },
-        "assetId": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "amt": {
-          "type": "string",
-          "format": "uint64",
-          "title": "precision　is 100000000"
-        },
-        "balance": {
-          "type": "string",
-          "format": "uint64",
-          "title": "precision　is 100000000"
-        },
-        "PaymentHash": {
-          "type": "string",
-          "title": "fill on server side"
-        },
-        "parts": {
-          "type": "string",
-          "format": "uint64",
-          "description": "how many times the luckPk can be received. every receive-item save as LuckItem."
-        },
-        "gives": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "status": {
-          "$ref": "#/definitions/toolrpcLuckPKStatus"
-        },
-        "expiredTimeSec": {
-          "type": "string",
-          "format": "int64"
-        },
-        "invoice": {
-          "type": "string",
-          "title": "gen by server"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "int64"
-        },
-        "ErrorCreateMsg": {
-          "type": "string"
-        }
-      },
-      "title": "luckPackage"
     },
     "toolrpcOmniGetPropertyRes": {
       "type": "object",
@@ -574,59 +420,6 @@
           "example": "baidu.com"
         }
       }
-    },
-    "toolrpcSpayStatus": {
-      "type": "integer",
-      "format": "int32",
-      "enum": [
-        "0",
-        "1",
-        "2",
-        "3"
-      ],
-      "default": "0",
-      "title": "- 1: user have payed service Invoice\n - 2: server have payed to user c"
-    },
-    "toolrpcspay": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "format": "int64"
-        },
-        "userInvoice": {
-          "type": "string",
-          "title": "user a create invoice,give to b,"
-        },
-        "servInvoice": {
-          "type": "string",
-          "title": "server b gen invoice, user a rcv it and give to c, user c will pay it"
-        },
-        "siPayHash": {
-          "type": "string",
-          "title": "server invoice hash"
-        },
-        "userId": {
-          "type": "string",
-          "format": "int64",
-          "title": "user a id , fill in server side;"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "int64"
-        },
-        "status": {
-          "$ref": "#/definitions/toolrpcSpayStatus"
-        },
-        "errMsg": {
-          "type": "string"
-        },
-        "errTimes": {
-          "type": "string",
-          "format": "int64"
-        }
-      },
-      "title": "spay:  substitution　pay"
     }
   }
 }

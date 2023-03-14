@@ -2,6 +2,8 @@ package lndapi
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"github.com/lightningnetwork/lnd/lnrpc"
 	"github.com/lightningnetwork/lnd/lnrpc/routerrpc"
 	"github.com/lightningnetwork/lnd/lnwire"
@@ -45,11 +47,18 @@ func Sendpayment(lcli lnrpc.LightningClient, rcli routerrpc.RouterClient, payReq
 	req.NoInflightUpdates = true
 	req.TimeoutSeconds = 5
 	stream, err := rcli.OB_SendPaymentV2(context.TODO(), req)
+	if err != nil {
+		return false, err
+	}
 	payment, err := stream.Recv()
 	if err != nil {
 		return false, err
 	}
-	return payment.Status != lnrpc.Payment_IN_FLIGHT, err
+	if payment.Status == lnrpc.Payment_SUCCEEDED {
+		return true, nil
+	} else {
+		return false, errors.New(fmt.Sprintf("err pay invoice with status %v", payment.Status))
+	}
 }
 
 func defaultRoutingFeeLimitForAmount(a int64) int64 {
