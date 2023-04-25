@@ -23,6 +23,7 @@ enum SpayStatus{
   //server have payed to user c
   PayEnd=2;
   Error=3;
+  Refunded=4;
 }
 
 // spay:  substitution　pay
@@ -34,12 +35,15 @@ message spay{
   string serv_invoice = 3;
   //  server invoice hash
   string si_payHash = 4;
+  string payer_addr = 10;
+  int64 expire = 11;
   //  user a id , fill in server side;
   int64 user_id = 5;
   int64 created_at = 6;
   SpayStatus status = 7;
   string err_msg = 8;
   int64  errTimes=9;
+
 }
 //luckPackage
 message LuckPk{

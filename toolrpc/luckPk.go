@@ -38,6 +38,14 @@ func GetUserIdKey(ctx context.Context) (userid string, err error) {
 	}
 	return strconv.Itoa(int(un.ID)), nil
 }
+func isOnline(userId int, userKey string) bool {
+	un := &UserNode{UserIdKey: userKey, ID: uint(userId)}
+	err := db.First(un, un).Error
+	if err == nil {
+		return un.Online == 1
+	}
+	return false
+}
 
 func getCtxUserid(ctx context.Context) int64 {
 	useridStr, err := GetGrpcHeader(ctx, "userid")
@@ -71,6 +79,19 @@ type LuckPkServer struct {
 	shudownChan *signal.Interceptor
 }
 
+func (l *LuckPkServer) Job() {
+	var timer = time.NewTicker(time.Duration(10) * time.Second)
+	defer timer.Stop()
+
+	for {
+		select {
+		case <-l.shudownChan.ShutdownChannel():
+			return
+		case <-timer.C:
+			l.refund("")
+		}
+	}
+}
 func (l *LuckPkServer) MonitorInvoice() {
 	log.Println("begin MonitorInvoice")
 	for {
@@ -106,7 +127,7 @@ func (l *LuckPkServer) MonitorInvoice() {
 }
 func (l *LuckPkServer) runUserSpay(userId int64) {
 	spays := []*Spay{}
-	err := db.Find(&spays, "user_id=? and status=?", userId, SpayStatus_UserPayed).Error
+	err := db.Find(&spays, "user_id=? and status=? and Expire>? ", userId, SpayStatus_UserPayed, time.Now().Second()).Error
 	if err == nil {
 		for _, spay := range spays {
 			_, err := lndapi.Sendpayment(l.lndCli, l.routerCli, spay.UserInvoice)
@@ -121,6 +142,47 @@ func (l *LuckPkServer) runUserSpay(userId int64) {
 			}
 		}
 	}
+	//refund
+
+}
+
+var refundMux sync.Mutex
+
+// refund : if invoke from heartbeat, online param use true，else use false
+func (l *LuckPkServer) refund(userKey string) {
+	refundMux.Lock()
+	defer refundMux.Unlock()
+	if len(userKey) > 0 {
+		if !isOnline(0, userKey) {
+			return
+		}
+	}
+	spays := []*Spay{}
+	var err error
+	if len(userKey) > 0 {
+		err = db.Find(&spays, "payer_addr=? and status=? and Expire<? ", userKey, SpayStatus_UserPayed, time.Now().Unix()).Error
+	} else {
+		err = db.Find(&spays, "status=? and Expire<? ", SpayStatus_UserPayed, time.Now().Unix()).Error
+	}
+	if err == nil {
+		for _, spay := range spays {
+			if len(userKey) == 0 && !isOnline(0, spay.PayerAddr) {
+				continue
+			}
+			log.Printf("begin refund %v ", spay.PayerAddr)
+			_, err := lndapi.SendpaymentRefund(l.lndCli, l.routerCli, spay.UserInvoice, spay.PayerAddr)
+			if err != nil {
+				db.Model(spay).Updates(Spay{ErrMsg: err.Error(), ErrTimes: spay.ErrTimes + 1})
+				log.Println("server pay user invoice err", err)
+				return
+			}
+			err = db.Model(spay).Updates(Spay{Status: SpayStatus_Refunded}).Error
+			if err != nil {
+				return
+			}
+			log.Printf(" %v refund ok ", spay.PayerAddr)
+		}
+	}
 }
 func (l *LuckPkServer) updateSpayByInvoide(invoice *lnrpc.Invoice) {
 	rhash := hex.EncodeToString(invoice.RHash)
@@ -133,17 +195,22 @@ func (l *LuckPkServer) updateSpayByInvoide(invoice *lnrpc.Invoice) {
 		return
 	}
 	if sp.Status == SpayStatus_PayINIT {
+		payerAddr := ""
 		spState := SpayStatus_PayINIT
 		msg := ""
+		expire := int64(0)
 		if invoice.State == lnrpc.Invoice_SETTLED {
 			spState = SpayStatus_UserPayed
+			payerAddr = hex.EncodeToString(invoice.PayerAddr)
+			expire = invoice.SettleDate + invoice.Expiry
 		} else if invoice.State == lnrpc.Invoice_CANCELED {
 			spState = SpayStatus_Error
 			msg = "Invoice_CANCELED"
 		} else {
 			return
 		}
-		err = db.Model(sp).Updates(Spay{Status: spState, ErrMsg: msg}).Error
+		err = db.Model(sp).Updates(Spay{Status: spState, PayerAddr: payerAddr, Expire: expire, ErrMsg: msg}).Error
+		//return
 		if err != nil {
 			log.Println("updateLuckPkByInvoide db err", err)
 			return
@@ -255,6 +322,7 @@ func (l *LuckPkServer) HeartBeat(recStream LuckPkApi_HeartBeatServer) error {
 			db.Model(un).Updates(UserNode{Online: 1, IpAddress: addre})
 			log.Printf("trigger user spay %v %v", un.ID, un.UserIdKey)
 			l.runUserSpay(userId)
+			l.refund(un.UserIdKey)
 		}
 		defer func() {
 			now := time.Now()

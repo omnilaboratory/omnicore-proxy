@@ -67,6 +67,8 @@ func main() {
 	if enableLuckServer {
 		if dbConnstr != "" {
 			toolrpc.InitDb(dbConnstr)
+		} else {
+			panic("miss dbConnstr")
 		}
 		if len(lnddir) == 0 {
 			log.Fatalln("miss lnddir")
