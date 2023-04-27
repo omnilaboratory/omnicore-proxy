@@ -11,8 +11,10 @@ import (
 	"github.com/lightningnetwork/lnd/lnrpc/routerrpc"
 	"google.golang.org/grpc/peer"
 	"gorm.io/driver/mysql"
+	"gorm.io/gorm/logger"
 	"om-rpc-tool/lndapi"
 	"om-rpc-tool/signal"
+	"os"
 
 	//"github.com/btcsuite/btcd/btcec/v2/ecdsa"
 	"google.golang.org/grpc/codes"
@@ -162,7 +164,7 @@ func (l *LuckPkServer) refund(userKey string) {
 	if len(userKey) > 0 {
 		err = db.Find(&spays, "payer_addr=? and status=? and Expire<? ", userKey, SpayStatus_UserPayed, time.Now().Unix()).Error
 	} else {
-		err = db.Find(&spays, "status=? and Expire<? ", SpayStatus_UserPayed, time.Now().Unix()).Error
+		err = db.Find(&spays, "payer_addr<>'' and status=? and Expire<?", SpayStatus_UserPayed, time.Now().Unix()).Error
 	}
 	if err == nil {
 		for _, spay := range spays {
@@ -401,15 +403,27 @@ var db *gorm.DB
 
 func InitDb(connstr string) {
 	var err error
+	newLogger := logger.New(
+		log.New(os.Stderr, "\r\n", log.LstdFlags), // io writer
+		logger.Config{
+			SlowThreshold:             time.Second,   // Slow SQL threshold
+			LogLevel:                  logger.Silent, // Log level
+			IgnoreRecordNotFoundError: true,          // Ignore ErrRecordNotFound error for logger
+			ParameterizedQueries:      true,          // Don't include params in the SQL log
+			Colorful:                  false,         // Disable color
+		},
+	)
+
 	//db, err = gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
 	db, err = gorm.Open(mysql.New(mysql.Config{
 		DSN: connstr,
-	}), &gorm.Config{})
+	}), &gorm.Config{Logger: newLogger})
 	if err != nil {
 		panic("failed to connect database")
 	}
 	// Migrate the schema
 	db.AutoMigrate(&UserNode{}, &LuckPk{}, &LuckItem{}, &HeartBeat{}, Spay{})
+
 	db = db.Debug()
 }
 

@@ -17,15 +17,17 @@ import (
 var btcHost string
 var rpcUser string
 var rpcPasswd string
+var rpcPort string
 
 func main() {
 	flag.StringVar(&btcHost, "btc_host", "http://localhost:8332", "http://ip:port")
 	flag.StringVar(&rpcUser, "rpc_user", "test", "")
 	flag.StringVar(&rpcPasswd, "rpc_passwd", "test", "")
+	flag.StringVar(&rpcPort, "rpc_port", "8332", "")
 	flag.Parse()
 	http.HandleFunc("/", mainHttpHandler)
-	log.Println("server start at :18332")
-	err := http.ListenAndServe(":18332", http.DefaultServeMux)
+	log.Println("server start at :", rpcPort)
+	err := http.ListenAndServe(":"+rpcPort, http.DefaultServeMux)
 	if err != nil {
 		log.Println(err)
 	}

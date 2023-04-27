@@ -49,3 +49,10 @@ curl -X 'GET' \
   'https://faucet.oblnd.top/api/SendCoin/$a_address?assetId=$assetId' \
   -H 'accept: application/json'
 ```
+
+### agency fund api (spay)
+luckpackage and agency fund service
+The complete interfaces are in: toolrpc/luckPk.proto
+
+go run spay [falgs]
+
