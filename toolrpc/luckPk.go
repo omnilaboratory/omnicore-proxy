@@ -6,17 +6,19 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/btcsuite/btcd/btcec"
+	"github.com/btcsuite/btcd/btcec/v2"
+	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/lightningnetwork/lnd/lnrpc"
 	"github.com/lightningnetwork/lnd/lnrpc/routerrpc"
 	"google.golang.org/grpc/peer"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm/logger"
+	"io"
 	"om-rpc-tool/lndapi"
 	"om-rpc-tool/signal"
 	"os"
 
-	//"github.com/btcsuite/btcd/btcec/v2/ecdsa"
+	"github.com/btcsuite/btcd/btcec/v2/ecdsa"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -58,6 +60,23 @@ func getCtxUserid(ctx context.Context) int64 {
 	return int64(userid)
 }
 
+type ChannelPair struct {
+	ID uint `gorm:"primarykey"`
+	//remote ready:0 ,both ready:1
+	Status        int8
+	RemotePubKey  string
+	ChanID        string
+	AssetId       int
+	BtcCap        int64
+	AssetCap      int64
+	LocalChanID   string
+	LocalBtcCap   int64
+	LocalAssetCap int64
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	LastErrMsg    string
+}
+
 type UserNode struct {
 	ID uint `gorm:"primarykey"`
 	//online:1  offline:2
@@ -93,6 +112,127 @@ func (l *LuckPkServer) Job() {
 			l.refund("")
 		}
 	}
+}
+func (l *LuckPkServer) MonitorChannel() {
+	log.Println("begin MonitorChannel")
+	for {
+		rs, serr := l.lndCli.SubscribeChannelEvents(context.TODO(), &lnrpc.ChannelEventSubscription{})
+		if serr == nil {
+			log.Println("MonitorChannel begin Subscribe")
+		LOOP:
+			for {
+				select {
+				case <-l.shudownChan.ShutdownChannel():
+					return
+				default:
+					channelEvent, err := rs.Recv()
+					if err != nil {
+						serr = err
+						break LOOP
+					}
+					if channelEvent.Type == lnrpc.ChannelEventUpdate_OPEN_CHANNEL {
+						channel := channelEvent.Channel.(*lnrpc.ChannelEventUpdate_OpenChannel).OpenChannel
+						if !channel.Initiator {
+							assetId := channel.AssetId
+							btcAmt := channel.BtcCapacity
+							assetAmt := channel.AssetCapacity
+							remotePub, _ := hex.DecodeString(channel.RemotePubkey)
+							log.Printf("rec new channel ChannelPoint:%v assetId %v,btcAmt  %v,assetAmt  %v, remotePub %v",
+								channel.ChannelPoint, assetId, btcAmt, assetAmt, remotePub)
+							cp := &ChannelPair{ChanID: channel.ChannelPoint, RemotePubKey: channel.RemotePubkey,
+								AssetId: int(assetId), AssetCap: assetAmt, BtcCap: btcAmt}
+							db.Create(cp)
+
+							if assetId != 0 {
+								assetAmt = assetAmt * 20 / 100
+							} else {
+								btcAmt = btcAmt * 20 / 100
+							}
+							openReq := &lnrpc.OpenChannelRequest{
+								MinConfs:                1,
+								NodePubkey:              remotePub,
+								AssetId:                 assetId,
+								LocalFundingBtcAmount:   btcAmt,
+								LocalFundingAssetAmount: assetAmt,
+							}
+							stream, err := l.lndCli.OB_OpenChannel(context.TODO(), openReq)
+							if err != nil {
+								emsg := fmt.Sprint("openchannel err %v", err)
+								cp.LastErrMsg = emsg
+								db.Save(cp)
+								log.Println(emsg)
+								continue
+							}
+						OPENLOOP:
+							for {
+								resp, err := stream.Recv()
+								if err == io.EOF {
+									emsg := "openchannel err with EOF"
+									cp.LastErrMsg = emsg
+									db.Save(cp)
+									log.Printf(emsg)
+									break
+								} else if err != nil {
+									emsg := fmt.Sprint("openchannel err %v", err)
+									cp.LastErrMsg = emsg
+									db.Save(cp)
+									log.Println(emsg)
+									break
+								}
+								switch update := resp.Update.(type) {
+								case *lnrpc.OpenStatusUpdate_ChanPending:
+								case *lnrpc.OpenStatusUpdate_ChanOpen:
+									chainpoint, err := getChainPoint(update)
+									if err != nil {
+										log.Printf("openchannel err %v", err)
+										break OPENLOOP
+									}
+									log.Printf("openchannel ok %v", chainpoint)
+									cp.Status = 1
+									cp.LocalChanID = chainpoint
+									cp.LocalBtcCap = btcAmt
+									cp.LocalAssetCap = assetAmt
+									db.Save(cp)
+								}
+							}
+						} else { //self  Initiator
+							log.Println("skip self Initiator channel", channel.ChannelPoint)
+						}
+
+					} else { //other channelEvent
+						log.Printf("channelEvent: %v", channelEvent.Type)
+					}
+				}
+			}
+			if serr != nil {
+				log.Println("MonitorInvoice err", serr)
+			}
+			time.Sleep(5 * time.Second)
+		}
+	}
+	log.Println("end MonitorChannel")
+}
+func getChainPoint(update *lnrpc.OpenStatusUpdate_ChanOpen) (string, error) {
+	channelPoint := update.ChanOpen.ChannelPoint
+	var txidHash []byte
+	switch channelPoint.GetFundingTxid().(type) {
+	case *lnrpc.ChannelPoint_FundingTxidBytes:
+		txidHash = channelPoint.GetFundingTxidBytes()
+	case *lnrpc.ChannelPoint_FundingTxidStr:
+		s := channelPoint.GetFundingTxidStr()
+		h, err := chainhash.NewHashFromStr(s)
+		if err != nil {
+			return "", err
+		}
+
+		txidHash = h[:]
+	}
+	txid, err := chainhash.NewHash(txidHash)
+	if err != nil {
+		return "", err
+	}
+	index := channelPoint.OutputIndex
+	return fmt.Sprintf("%v:%v", txid, index), nil
 }
 func (l *LuckPkServer) MonitorInvoice() {
 	log.Println("begin MonitorInvoice")
@@ -264,9 +404,13 @@ func NewLuckPkServer(nodeAddress, netType, lndDir string, shudownChan *signal.In
 	lserver := new(LuckPkServer)
 	lserver.shudownChan = shudownChan
 	var err error
-	lserver.lndCli, err = lndapi.GetLndClient(nodeAddress, netType, lndDir)
-	if err != nil {
-		panic(err)
+	for {
+		lserver.lndCli, err = lndapi.GetLndClient(nodeAddress, netType, lndDir)
+		if err == nil {
+			break
+		}
+		log.Printf("waiting for obd node %v online", nodeAddress)
+		time.Sleep(5 * time.Second)
 	}
 	//test State
 	res, err := lserver.lndCli.OB_GetInfo(context.TODO(), &lnrpc.GetInfoRequest{})
@@ -285,6 +429,9 @@ func NewLuckPkServer(nodeAddress, netType, lndDir string, shudownChan *signal.In
 
 	go func() {
 		lserver.MonitorInvoice()
+	}()
+	go func() {
+		lserver.MonitorChannel()
 	}()
 	return lserver
 }
@@ -367,12 +514,12 @@ func (l *LuckPkServer) RegistTlsKey(ctx context.Context, obj *RegistTlsKeyReq) (
 	}
 
 	log.Printf("RegistTlsKey receive:  %x %s", obj.UserNodeKey, tlsPubKey)
-	pubKey, err := btcec.ParsePubKey(obj.UserNodeKey, btcec.S256())
+	pubKey, err := btcec.ParsePubKey(obj.UserNodeKey)
 	if err != nil {
 		return &emptypb.Empty{}, err
 	}
-	//sig, err := ecdsa.ParseDERSignature(obj.Sig)
-	sig, err := btcec.ParseDERSignature(obj.Sig, btcec.S256())
+	sig, err := ecdsa.ParseDERSignature(obj.Sig)
+	//sig, err := btcec.ParseDERSignature(obj.Sig, btcec.S256())
 	if err != nil {
 		return &emptypb.Empty{}, err
 	}
@@ -409,8 +556,8 @@ func InitDb(connstr string) {
 			SlowThreshold:             time.Second,   // Slow SQL threshold
 			LogLevel:                  logger.Silent, // Log level
 			IgnoreRecordNotFoundError: true,          // Ignore ErrRecordNotFound error for logger
-			ParameterizedQueries:      true,          // Don't include params in the SQL log
-			Colorful:                  false,         // Disable color
+			ParameterizedQueries:      false,         // Don't include params in the SQL log
+			Colorful:                  true,          // Disable color
 		},
 	)
 
@@ -422,7 +569,7 @@ func InitDb(connstr string) {
 		panic("failed to connect database")
 	}
 	// Migrate the schema
-	db.AutoMigrate(&UserNode{}, &LuckPk{}, &LuckItem{}, &HeartBeat{}, Spay{})
+	db.AutoMigrate(&UserNode{}, &LuckPk{}, &LuckItem{}, &HeartBeat{}, Spay{}, ChannelPair{})
 
 	db = db.Debug()
 }
