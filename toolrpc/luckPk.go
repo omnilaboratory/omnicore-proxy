@@ -6,7 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/btcsuite/btcd/btcec"
+	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/lightningnetwork/lnd/lnrpc"
 	"github.com/lightningnetwork/lnd/lnrpc/routerrpc"
 	"google.golang.org/grpc/peer"
@@ -16,7 +16,7 @@ import (
 	"om-rpc-tool/signal"
 	"os"
 
-	//"github.com/btcsuite/btcd/btcec/v2/ecdsa"
+	"github.com/btcsuite/btcd/btcec/v2/ecdsa"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -264,9 +264,13 @@ func NewLuckPkServer(nodeAddress, netType, lndDir string, shudownChan *signal.In
 	lserver := new(LuckPkServer)
 	lserver.shudownChan = shudownChan
 	var err error
-	lserver.lndCli, err = lndapi.GetLndClient(nodeAddress, netType, lndDir)
-	if err != nil {
-		panic(err)
+	for {
+		lserver.lndCli, err = lndapi.GetLndClient(nodeAddress, netType, lndDir)
+		if err == nil {
+			break
+		}
+		log.Printf("waiting for obd node %v online", nodeAddress)
+		time.Sleep(5 * time.Second)
 	}
 	//test State
 	res, err := lserver.lndCli.OB_GetInfo(context.TODO(), &lnrpc.GetInfoRequest{})
@@ -367,12 +371,12 @@ func (l *LuckPkServer) RegistTlsKey(ctx context.Context, obj *RegistTlsKeyReq) (
 	}
 
 	log.Printf("RegistTlsKey receive:  %x %s", obj.UserNodeKey, tlsPubKey)
-	pubKey, err := btcec.ParsePubKey(obj.UserNodeKey, btcec.S256())
+	pubKey, err := btcec.ParsePubKey(obj.UserNodeKey)
 	if err != nil {
 		return &emptypb.Empty{}, err
 	}
-	//sig, err := ecdsa.ParseDERSignature(obj.Sig)
-	sig, err := btcec.ParseDERSignature(obj.Sig, btcec.S256())
+	sig, err := ecdsa.ParseDERSignature(obj.Sig)
+	//sig, err := btcec.ParseDERSignature(obj.Sig, btcec.S256())
 	if err != nil {
 		return &emptypb.Empty{}, err
 	}
