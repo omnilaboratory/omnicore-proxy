@@ -390,6 +390,8 @@ github.com/lightningnetwork/lightning-onion v1.2.0 h1:nq7OxNMnhmOKKQefvgwDlZGT4r
 github.com/lightningnetwork/lightning-onion v1.2.0/go.mod h1:7dDx73ApjEZA0kcknI799m2O5kkpfg4/gr7N092ojNo=
 github.com/lightningnetwork/lnd/kvdb v1.3.0 h1:0sadTsmfIoorGvd2zf09q/H7sxa/OU48NCpCQUPNN48=
 github.com/lightningnetwork/lnd/kvdb v1.3.0/go.mod h1:x+IpsuDynubjokUofavLXroeGfS/WrqUXXTK6vN/gp4=
+github.com/lightningnetwork/lnd/tlv v1.0.2 h1:LG7H3Uw/mHYGnEeHRPg+STavAH+UsFvuBflD0PzcYFQ=
+github.com/lightningnetwork/lnd/tlv v1.0.2/go.mod h1:fICAfsqk1IOsC1J7G9IdsWX1EqWRMqEDCNxZJSKr9C4=
 github.com/ltcsuite/ltcd v0.0.0-20190101042124-f37f8bf35796 h1:sjOGyegMIhvgfq5oaue6Td+hxZuf3tDC8lAPrFldqFw=
 github.com/ltcsuite/ltcd v0.0.0-20190101042124-f37f8bf35796/go.mod h1:3p7ZTf9V1sNPI5H8P3NkTFF4LuwMdPl2DodF60qAKqY=
 github.com/ltcsuite/ltcutil v0.0.0-20181217130922-17f3b04680b6/go.mod h1:8Vg/LTOO0KYa/vlHWJ6XZAevPQThGH5sufO0Hrou/lA=

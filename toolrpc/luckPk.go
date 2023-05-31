@@ -130,8 +130,9 @@ func (l *LuckPkServer) MonitorChannel() {
 						serr = err
 						break LOOP
 					}
-					if channelEvent.Type == lnrpc.ChannelEventUpdate_OPEN_CHANNEL {
-						channel := channelEvent.Channel.(*lnrpc.ChannelEventUpdate_OpenChannel).OpenChannel
+					if channelEvent.Type == lnrpc.ChannelEventUpdate_PENDING_OPEN_CHANNEL {
+						//channel := channelEvent.Channel.(*lnrpc.ChannelEventUpdate_OpenChannel).OpenChannel
+						channel := channelEvent.Channel.(*lnrpc.ChannelEventUpdate_PendingOpenChannel).PendingOpenChannel
 						if !channel.Initiator {
 							assetId := channel.AssetId
 							btcAmt := channel.BtcCapacity
@@ -146,7 +147,10 @@ func (l *LuckPkServer) MonitorChannel() {
 							if assetId != 0 {
 								assetAmt = assetAmt * 20 / 100
 							} else {
-								btcAmt = btcAmt * 20 / 100
+								//if user funding btc<=100000, server will create same cap channel
+								if btcAmt > 100000 {
+									btcAmt = btcAmt * 20 / 100
+								}
 							}
 							openReq := &lnrpc.OpenChannelRequest{
 								MinConfs:                1,

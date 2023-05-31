@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/btcsuite/btcd v0.23.5-0.20230228185050-38331963bddd
 	github.com/btcsuite/btcd/btcec/v2 v2.3.2
+	github.com/btcsuite/btcd/chaincfg/chainhash v1.0.1
 	github.com/btcsuite/btcwallet v0.16.9
 	github.com/coreos/go-systemd v0.0.0-20190719114852-fd7a80b32e1f
 	github.com/golang/glog v1.0.0
@@ -26,7 +27,6 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/btcsuite/btcd/btcutil v1.1.3 // indirect
 	github.com/btcsuite/btcd/btcutil/psbt v1.1.8 // indirect
-	github.com/btcsuite/btcd/chaincfg/chainhash v1.0.1 // indirect
 	github.com/btcsuite/btclog v0.0.0-20170628155309-84c8d2346e9f // indirect
 	github.com/btcsuite/btcwallet/wallet/txauthor v1.3.3 // indirect
 	github.com/btcsuite/btcwallet/wallet/txrules v1.2.0 // indirect
@@ -84,6 +84,7 @@ require (
 	github.com/lightningnetwork/lnd/kvdb v1.3.0 // indirect
 	github.com/lightningnetwork/lnd/queue v1.1.0 // indirect
 	github.com/lightningnetwork/lnd/ticker v1.1.0 // indirect
+	github.com/lightningnetwork/lnd/tlv v1.0.2 // indirect
 	github.com/ltcsuite/ltcd v0.0.0-20190101042124-f37f8bf35796 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/mholt/archiver/v3 v3.5.0 // indirect
