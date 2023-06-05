@@ -145,11 +145,15 @@ func (l *LuckPkServer) MonitorChannel() {
 							db.Create(cp)
 
 							if assetId != 0 {
-								assetAmt = assetAmt * 20 / 100
+								//assetAmt = assetAmt * 20 / 100
+								if assetAmt > 30 {
+									assetAmt = 30 + (assetAmt-30)*20/100
+								}
 							} else {
 								//if user funding btc<=100000, server will create same cap channel
 								if btcAmt > 100000 {
-									btcAmt = btcAmt * 20 / 100
+									//btcAmt = btcAmt * 20 / 100
+									btcAmt = 100000 + (btcAmt-100000)*20/100
 								}
 							}
 							openReq := &lnrpc.OpenChannelRequest{
@@ -185,6 +189,20 @@ func (l *LuckPkServer) MonitorChannel() {
 								}
 								switch update := resp.Update.(type) {
 								case *lnrpc.OpenStatusUpdate_ChanPending:
+									chainpoint, err := getPendingChainPoint(update)
+									if err != nil {
+										log.Printf("openchannel err %v", err)
+										stream.CloseSend()
+										break OPENLOOP
+									}
+									log.Printf("openchannel pending %v", chainpoint)
+									cp.Status = 1
+									cp.LocalChanID = chainpoint
+									cp.LocalBtcCap = btcAmt
+									cp.LocalAssetCap = assetAmt
+									db.Save(cp)
+									stream.CloseSend()
+									break OPENLOOP
 								case *lnrpc.OpenStatusUpdate_ChanOpen:
 									chainpoint, err := getChainPoint(update)
 									if err != nil {
@@ -215,6 +233,14 @@ func (l *LuckPkServer) MonitorChannel() {
 		}
 	}
 	log.Println("end MonitorChannel")
+}
+func getPendingChainPoint(update *lnrpc.OpenStatusUpdate_ChanPending) (string, error) {
+	txid, err := chainhash.NewHash(update.ChanPending.Txid)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%v:%v", txid, update.ChanPending.OutputIndex), nil
+
 }
 func getChainPoint(update *lnrpc.OpenStatusUpdate_ChanOpen) (string, error) {
 	channelPoint := update.ChanOpen.ChannelPoint
