@@ -146,8 +146,8 @@ func (l *LuckPkServer) MonitorChannel() {
 
 							if assetId != 0 {
 								//assetAmt = assetAmt * 20 / 100
-								if assetAmt > 30 {
-									assetAmt = 30 + (assetAmt-30)*20/100
+								if assetAmt > 3000000000 {
+									assetAmt = 3000000000 + (assetAmt-3000000000)*20/100
 								}
 							} else {
 								//if user funding btc<=100000, server will create same cap channel
