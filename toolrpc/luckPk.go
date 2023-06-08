@@ -698,6 +698,10 @@ func (l *LuckPkServer) GiveLuckPk(ctx context.Context, req *GiveLuckPkReq) (*emp
 	if lk.Gives >= lk.Parts {
 		return nil, errors.New(fmt.Sprintf("Exceeded the total number of lucky packets, the total is %v", lk.Parts))
 	}
+
+	if lk.ExpiredTimeSec > 0 && time.Now().Unix() > lk.ExpiredTimeSec {
+		return nil, errors.New("lucky packets expried")
+	}
 	//one user one LuckItem
 	litem := new(LuckItem)
 	litem.UserId = getCtxUserid(ctx)
