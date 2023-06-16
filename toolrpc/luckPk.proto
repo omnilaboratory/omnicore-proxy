@@ -40,6 +40,7 @@ message spay{
   //  user a id , fill in server side;
   int64 user_id = 5;
   int64 created_at = 6;
+  int64 updated_at = 12 ;
   SpayStatus status = 7;
   string err_msg = 8;
   int64  errTimes=9;
