@@ -313,10 +313,11 @@ func (l *LuckPkServer) runUserSpay(userId int64) {
 			_, err := lndapi.Sendpayment(l.lndCli, l.routerCli, spay.UserInvoice)
 			if err != nil {
 				db.Model(spay).Updates(Spay{ErrMsg: err.Error(), ErrTimes: spay.ErrTimes + 1})
-				log.Printf("runUserSpay err userId %d,spay.id %d,  err %s", userId, spay.Id, err)
+				log.Printf("runUserSpay err userId %d,spay.id %d,  err %v", userId, spay.Id, err)
+				continue
 				//return
 			}
-			log.Printf("runUserSpay complete userId %d,spay.id %d,  err %s", userId, spay.Id)
+			log.Printf("runUserSpay complete userId %d,spay.id %d", userId, spay.Id)
 			err = db.Model(spay).Updates(Spay{Status: SpayStatus_PayEnd}).Error
 			if err != nil {
 				return
