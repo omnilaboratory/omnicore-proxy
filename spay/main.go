@@ -67,6 +67,8 @@ func main() {
 		log.Fatalln(s1.Serve(lis1))
 	}()
 	<-shutdownChan.ShutdownChannel()
+	luckServer.Wg.Wait()
+	log.Println("app exit")
 	return
 }
 

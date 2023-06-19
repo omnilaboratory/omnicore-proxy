@@ -43,10 +43,10 @@ func GetUserIdKey(ctx context.Context) (userid string, err error) {
 	return strconv.Itoa(int(un.ID)), nil
 }
 func isOnline(userId int, userKey string) bool {
-	un := &UserNode{UserIdKey: userKey, ID: uint(userId)}
+	un := &UserNode{UserIdKey: userKey, ID: uint(userId), Online: 1}
 	err := db.First(un, un).Error
 	if err == nil {
-		return un.Online == 1
+		return true
 	}
 	return false
 }
@@ -98,6 +98,7 @@ type LuckPkServer struct {
 	lndCli      lnrpc.LightningClient
 	routerCli   routerrpc.RouterClient
 	shudownChan *signal.Interceptor
+	Wg          *sync.WaitGroup
 }
 
 func (l *LuckPkServer) Job() {
@@ -229,7 +230,7 @@ func (l *LuckPkServer) MonitorChannel() {
 				}
 			}
 			if serr != nil {
-				log.Println("MonitorInvoice err", serr)
+				log.Println("MonitorChannel err", serr)
 			}
 			time.Sleep(5 * time.Second)
 		}
@@ -331,7 +332,9 @@ var refundMux sync.Mutex
 
 // refund : if invoke from heartbeat, online param use true，else use false
 func (l *LuckPkServer) refund(userKey string) {
+	log.Println("refund locking")
 	refundMux.Lock()
+	log.Println("refund locked")
 	defer refundMux.Unlock()
 	if len(userKey) > 0 {
 		if !isOnline(0, userKey) {
@@ -410,17 +413,19 @@ func (l *LuckPkServer) updateSpayByInvoide(invoice *lnrpc.Invoice) {
 		}
 		//server try pay user invoice, user may offline; when user online can trigger this pay too
 		if sp.Status == SpayStatus_UserPayed {
-			log.Printf("updateSpayByInvoide Sendpayment rhash %x,  userid %d ", invoice.RHash, sp.UserId)
-			_, err := lndapi.Sendpayment(l.lndCli, l.routerCli, sp.UserInvoice)
-			if err != nil {
-				log.Printf("updateSpayByInvoide end Sendpayment to user err, rhash %x, userid %d, %s", invoice.RHash, sp.UserId, err)
-				return
-			}
-			log.Printf("updateSpayByInvoide complete rhash %x ", invoice.RHash)
-			err = db.Model(sp).Updates(Spay{Status: SpayStatus_PayEnd}).Error
-			if err != nil {
-				return
-			}
+			go func() {
+				log.Printf("updateSpayByInvoide Sendpayment rhash %x,  userid %d ", invoice.RHash, sp.UserId)
+				_, err := lndapi.Sendpayment(l.lndCli, l.routerCli, sp.UserInvoice)
+				if err != nil {
+					log.Printf("updateSpayByInvoide end Sendpayment to user err, rhash %x, userid %d, %s", invoice.RHash, sp.UserId, err)
+					return
+				}
+				log.Printf("updateSpayByInvoide complete rhash %x ", invoice.RHash)
+				err = db.Model(sp).Updates(Spay{Status: SpayStatus_PayEnd}).Error
+				if err != nil {
+					return
+				}
+			}()
 		}
 	}
 }
@@ -456,6 +461,7 @@ func updateLuckPkByInvoide(invoice *lnrpc.Invoice) {
 func NewLuckPkServer(nodeAddress, netType, lndDir string, shudownChan *signal.Interceptor) *LuckPkServer {
 	lserver := new(LuckPkServer)
 	lserver.shudownChan = shudownChan
+	lserver.Wg = &sync.WaitGroup{}
 	var err error
 	for {
 		lserver.lndCli, err = lndapi.GetLndClient(nodeAddress, netType, lndDir)
@@ -537,10 +543,13 @@ func (l *LuckPkServer) HeartBeat(recStream LuckPkApi_HeartBeatServer) error {
 			if un.ID > 0 {
 				db.Model(un).Updates(UserNode{Online: 2})
 			}
+			l.Wg.Done()
 		}()
+		l.Wg.Add(1)
 		for {
 			select {
 			case <-l.shudownChan.ShutdownChannel():
+				log.Println("shudown HeartBeat user", un.ID)
 				return nil
 			default:
 				_, err := recStream.Recv()
