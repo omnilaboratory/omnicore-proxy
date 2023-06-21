@@ -546,19 +546,50 @@ func (l *LuckPkServer) HeartBeat(recStream LuckPkApi_HeartBeatServer) error {
 			l.Wg.Done()
 		}()
 		l.Wg.Add(1)
+		msgChan := ChanRecv(recStream)
 		for {
 			select {
 			case <-l.shudownChan.ShutdownChannel():
 				log.Println("shudown HeartBeat user", un.ID)
 				return nil
-			default:
-				_, err := recStream.Recv()
-				if err != nil {
-					return err
+			case recv := <-msgChan:
+				{
+					if recv.Err != nil {
+						return recv.Err
+					}
 				}
+				//default:
+				//	_, err := recStream.Recv()
+				//	if err != nil {
+				//		log.Println("recStream.Recv err", err)
+				//		return err
+				//	}
 			}
+
 		}
 	}
+}
+
+type wrapObj struct {
+	Err error
+	Obj any
+}
+
+func ChanRecv(recStream LuckPkApi_HeartBeatServer) <-chan wrapObj {
+	c := make(chan wrapObj)
+	go func() {
+		defer func() { log.Println("ChanRecv exit") }()
+		for {
+			obj, err := recStream.Recv()
+			if err != nil {
+				c <- wrapObj{Err: err}
+				close(c)
+				return
+			}
+			c <- wrapObj{Obj: obj}
+		}
+	}()
+	return c
 }
 
 func (l *LuckPkServer) RegistTlsKey(ctx context.Context, obj *RegistTlsKeyReq) (*emptypb.Empty, error) {
