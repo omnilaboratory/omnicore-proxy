@@ -59,7 +59,7 @@ message OmniSendCoinReq {
     description:"user node pubKey";
     default:"025af4448f55bf1e6de1ae0486d4d103427c4e559a62ed7f8035bb1ed1af734f61"
   }];
-  string asset_id =2 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
+  int64 asset_id =2 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
     description: "mainnet 2147484208; testnet 2147485160 ;regnet 2147483651 ";
     default:"2147485160";
   }, (google.api.field_behavior) = REQUIRED];

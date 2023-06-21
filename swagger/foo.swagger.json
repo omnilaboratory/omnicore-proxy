@@ -49,6 +49,7 @@
             "in": "query",
             "required": true,
             "type": "string",
+            "format": "int64",
             "default": "2147485160"
           }
         ],
@@ -255,6 +256,7 @@
             "in": "query",
             "required": true,
             "type": "string",
+            "format": "int64",
             "default": "2147485160"
           }
         ],
