@@ -29,6 +29,22 @@ func (s *RpcServer) GetBalance(ctx context.Context, req *toolrpc.OmniGetbalanceR
 	return OmniGetbalance(req, s.btcClient)
 }
 
+func (s *RpcServer) ChannelSend(ctx context.Context, req *toolrpc.OmniSendCoinReq) (*toolrpc.OmniSendCoinRes, error) {
+	cmdstr := "scripts/channel_send.sh %s %s"
+	cmdstr = fmt.Sprintf(cmdstr, req.Address, req.AssetId)
+	args := strings.Fields(cmdstr)
+	cmd := exec.Command(args[0], args[1:]...)
+	log.Println("cmd.string", cmd.String())
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &out
+	err := cmd.Run()
+	if err != nil {
+		err = errors.New(err.Error() + out.String())
+		return nil, err
+	}
+	return &toolrpc.OmniSendCoinRes{Result: out.String()}, nil
+}
 func (s *RpcServer) SendCoin(ctx context.Context, req *toolrpc.OmniSendCoinReq) (*toolrpc.OmniSendCoinRes, error) {
 	cmdstr := "scripts/send_coin.sh %s %s"
 	if s.NetType == "regtest" { //proxy model

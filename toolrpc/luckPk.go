@@ -270,7 +270,7 @@ func getChainPoint(update *lnrpc.OpenStatusUpdate_ChanOpen) (string, error) {
 func (l *LuckPkServer) MonitorInvoice() {
 	log.Println("begin MonitorInvoice")
 	for {
-		rs, serr := l.lndCli.SubscribeInvoices(context.TODO(), &lnrpc.InvoiceSubscription{AddIndex: 1000000})
+		rs, serr := l.lndCli.SubscribeInvoices(context.TODO(), &lnrpc.InvoiceSubscription{AddIndex: 1000000, SettleIndex: 1})
 		if serr != nil {
 			log.Println("MonitorInvoice err", serr)
 			time.Sleep(5 * time.Second)

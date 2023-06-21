@@ -56,11 +56,12 @@ message OmniGetPropertyRes {
 // OmniGetPropertyReq defines the omniGetProperty JSON-RPC command.
 message OmniSendCoinReq {
   string address = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
-    default:"mzP3GRXwkxF9GrfWBj755JP3DoitwjiRs6"
+    description:"user node pubKey";
+    default:"025af4448f55bf1e6de1ae0486d4d103427c4e559a62ed7f8035bb1ed1af734f61"
   }];
   string asset_id =2 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field)={
     description: "mainnet 2147484208; testnet 2147485160 ;regnet 2147483651 ";
-    default:"";
+    default:"2147485160";
   }, (google.api.field_behavior) = REQUIRED];
 }
 message OmniSendCoinRes {
@@ -93,6 +94,15 @@ service tools{
       get: "/api/SendCoin/{address}"
     };
   }
+
+  // for regtest/testnet this command will send user  10000000 asset with channel;
+  // for mainnet this api  is disabled
+  rpc ChannelSend(OmniSendCoinReq) returns(OmniSendCoinRes){
+    option (google.api.http) = {
+      get: "/api/ChannelSend/{address}"
+    };
+  }
+
   //mine three block
   //only for regtest;  testnet or mainnet disabled
   rpc Mine(google.protobuf.Empty) returns(OmniMineCoinRes){

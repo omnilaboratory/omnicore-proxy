@@ -16,6 +16,47 @@
     "application/json"
   ],
   "paths": {
+    "/api/ChannelSend/{address}": {
+      "get": {
+        "summary": "for regtest/testnet this command will send user  10000000 asset with channel;\nfor mainnet this api  is disabled",
+        "operationId": "tools_ChannelSend",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/toolrpcOmniSendCoinRes"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "address",
+            "description": "user node pubKey",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "default": "025af4448f55bf1e6de1ae0486d4d103427c4e559a62ed7f8035bb1ed1af734f61"
+          },
+          {
+            "name": "assetId",
+            "description": "mainnet 2147484208; testnet 2147485160 ;regnet 2147483651 ",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "default": "2147485160"
+          }
+        ],
+        "tags": [
+          "tools"
+        ]
+      }
+    },
     "/api/GetBalance/{address}": {
       "get": {
         "operationId": "tools_GetBalance",
@@ -202,17 +243,19 @@
         "parameters": [
           {
             "name": "address",
+            "description": "user node pubKey",
             "in": "path",
             "required": true,
             "type": "string",
-            "default": "mzP3GRXwkxF9GrfWBj755JP3DoitwjiRs6"
+            "default": "025af4448f55bf1e6de1ae0486d4d103427c4e559a62ed7f8035bb1ed1af734f61"
           },
           {
             "name": "assetId",
             "description": "mainnet 2147484208; testnet 2147485160 ;regnet 2147483651 ",
             "in": "query",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "default": "2147485160"
           }
         ],
         "tags": [

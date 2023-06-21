@@ -27,6 +27,9 @@ type ToolsClient interface {
 	// for regtest this command will send user one bitcoin  and 100 asset, and mine 3 blocks;
 	// for testnet/mainnet this command will only send user 100 asset
 	SendCoin(ctx context.Context, in *OmniSendCoinReq, opts ...grpc.CallOption) (*OmniSendCoinRes, error)
+	// for regtest/testnet this command will send user  10000000 asset with channel;
+	// for mainnet this api  is disabled
+	ChannelSend(ctx context.Context, in *OmniSendCoinReq, opts ...grpc.CallOption) (*OmniSendCoinRes, error)
 	//mine three block
 	//only for regtest;  testnet or mainnet disabled
 	Mine(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*OmniMineCoinRes, error)
@@ -58,6 +61,15 @@ func (c *toolsClient) GetBalance(ctx context.Context, in *OmniGetbalanceReq, opt
 func (c *toolsClient) SendCoin(ctx context.Context, in *OmniSendCoinReq, opts ...grpc.CallOption) (*OmniSendCoinRes, error) {
 	out := new(OmniSendCoinRes)
 	err := c.cc.Invoke(ctx, "/toolrpc.tools/SendCoin", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *toolsClient) ChannelSend(ctx context.Context, in *OmniSendCoinReq, opts ...grpc.CallOption) (*OmniSendCoinRes, error) {
+	out := new(OmniSendCoinRes)
+	err := c.cc.Invoke(ctx, "/toolrpc.tools/ChannelSend", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -108,6 +120,9 @@ type ToolsServer interface {
 	// for regtest this command will send user one bitcoin  and 100 asset, and mine 3 blocks;
 	// for testnet/mainnet this command will only send user 100 asset
 	SendCoin(context.Context, *OmniSendCoinReq) (*OmniSendCoinRes, error)
+	// for regtest/testnet this command will send user  10000000 asset with channel;
+	// for mainnet this api  is disabled
+	ChannelSend(context.Context, *OmniSendCoinReq) (*OmniSendCoinRes, error)
 	//mine three block
 	//only for regtest;  testnet or mainnet disabled
 	Mine(context.Context, *emptypb.Empty) (*OmniMineCoinRes, error)
@@ -129,6 +144,9 @@ func (UnimplementedToolsServer) GetBalance(context.Context, *OmniGetbalanceReq) 
 }
 func (UnimplementedToolsServer) SendCoin(context.Context, *OmniSendCoinReq) (*OmniSendCoinRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendCoin not implemented")
+}
+func (UnimplementedToolsServer) ChannelSend(context.Context, *OmniSendCoinReq) (*OmniSendCoinRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChannelSend not implemented")
 }
 func (UnimplementedToolsServer) Mine(context.Context, *emptypb.Empty) (*OmniMineCoinRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Mine not implemented")
@@ -187,6 +205,24 @@ func _Tools_SendCoin_Handler(srv interface{}, ctx context.Context, dec func(inte
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ToolsServer).SendCoin(ctx, req.(*OmniSendCoinReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Tools_ChannelSend_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(OmniSendCoinReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ToolsServer).ChannelSend(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/toolrpc.tools/ChannelSend",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ToolsServer).ChannelSend(ctx, req.(*OmniSendCoinReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -277,6 +313,10 @@ var Tools_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SendCoin",
 			Handler:    _Tools_SendCoin_Handler,
+		},
+		{
+			MethodName: "ChannelSend",
+			Handler:    _Tools_ChannelSend_Handler,
 		},
 		{
 			MethodName: "Mine",
