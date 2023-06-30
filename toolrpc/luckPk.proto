@@ -45,6 +45,10 @@ message spay{
   string err_msg = 8;
   int64  errTimes=9;
 
+  string payer_invoice = 13;
+  uint32 asset_id =14;
+  int64 amt =15;
+
 }
 //luckPackage
 message LuckPk{
@@ -129,11 +133,37 @@ message RegistTlsKeyReq{
   string alias=3;
 }
 
+message HeartBeatMsg{
+  ActionType action = 1;
+  oneof body {
+    GetInvoiceBody get_invoice = 2 ;
+    GetInvoiceResBody get_invoice_res = 3;
+    google.protobuf.Empty emptyBody=4;
+  }
+  enum ActionType {
+    Empty = 0;
+    // server send to client,for a invoice request
+    GETINVOICE = 1;
+    //client gen a invoice and  send to server
+    GETINVOICE_RES = 2;
+  }
+}
+//map to enum GETINVOICE
+message GetInvoiceBody{
+  uint32 asset_id=1;
+  int64 amt =2;
+  int64 spay_id=3;
+}
+//map to enum GETINVOICERES
+message GetInvoiceResBody{
+  int64 spay_id=1;
+  string pay_req =2;
+}
 service luckPkApi{
   rpc CreateSpay(spay)returns (spay){
 
   }
-  rpc HeartBeat(stream google.protobuf.Empty)returns(google.protobuf.Empty) {
+  rpc HeartBeat(stream HeartBeatMsg)returns(stream HeartBeatMsg) {
 
   }
   rpc RegistTlsKey(RegistTlsKeyReq)returns(google.protobuf.Empty) {

@@ -62,8 +62,8 @@ func (c *luckPkApiClient) HeartBeat(ctx context.Context, opts ...grpc.CallOption
 }
 
 type LuckPkApi_HeartBeatClient interface {
-	Send(*emptypb.Empty) error
-	CloseAndRecv() (*emptypb.Empty, error)
+	Send(*HeartBeatMsg) error
+	Recv() (*HeartBeatMsg, error)
 	grpc.ClientStream
 }
 
@@ -71,15 +71,12 @@ type luckPkApiHeartBeatClient struct {
 	grpc.ClientStream
 }
 
-func (x *luckPkApiHeartBeatClient) Send(m *emptypb.Empty) error {
+func (x *luckPkApiHeartBeatClient) Send(m *HeartBeatMsg) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *luckPkApiHeartBeatClient) CloseAndRecv() (*emptypb.Empty, error) {
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	m := new(emptypb.Empty)
+func (x *luckPkApiHeartBeatClient) Recv() (*HeartBeatMsg, error) {
+	m := new(HeartBeatMsg)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -221,8 +218,8 @@ func _LuckPkApi_HeartBeat_Handler(srv interface{}, stream grpc.ServerStream) err
 }
 
 type LuckPkApi_HeartBeatServer interface {
-	SendAndClose(*emptypb.Empty) error
-	Recv() (*emptypb.Empty, error)
+	Send(*HeartBeatMsg) error
+	Recv() (*HeartBeatMsg, error)
 	grpc.ServerStream
 }
 
@@ -230,12 +227,12 @@ type luckPkApiHeartBeatServer struct {
 	grpc.ServerStream
 }
 
-func (x *luckPkApiHeartBeatServer) SendAndClose(m *emptypb.Empty) error {
+func (x *luckPkApiHeartBeatServer) Send(m *HeartBeatMsg) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *luckPkApiHeartBeatServer) Recv() (*emptypb.Empty, error) {
-	m := new(emptypb.Empty)
+func (x *luckPkApiHeartBeatServer) Recv() (*HeartBeatMsg, error) {
+	m := new(HeartBeatMsg)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -390,6 +387,7 @@ var LuckPkApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "HeartBeat",
 			Handler:       _LuckPkApi_HeartBeat_Handler,
+			ServerStreams: true,
 			ClientStreams: true,
 		},
 	},

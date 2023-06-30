@@ -112,7 +112,7 @@ func Sendpayment(lcli lnrpc.LightningClient, rcli routerrpc.RouterClient, payReq
 	if payment.Status == lnrpc.Payment_SUCCEEDED {
 		return true, nil
 	} else {
-		return false, errors.New(fmt.Sprintf("err pay invoice with status %v", payment.Status))
+		return false, errors.New(fmt.Sprintf("err pay invoice with status %v, reason %v", payment.Status, payment.FailureReason))
 	}
 }
 

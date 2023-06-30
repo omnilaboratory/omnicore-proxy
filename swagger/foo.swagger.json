@@ -1,12 +1,12 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "toolrpc/proto.proto",
+    "title": "toolrpc/luckPk1.proto",
     "version": "version not set"
   },
   "tags": [
     {
-      "name": "tools"
+      "name": "luckPkApi"
     }
   ],
   "consumes": [
@@ -15,268 +15,20 @@
   "produces": [
     "application/json"
   ],
-  "paths": {
-    "/api/ChannelSend/{address}": {
-      "get": {
-        "summary": "for regtest/testnet this command will send user  10000000 asset with channel;\nfor mainnet this api  is disabled",
-        "operationId": "tools_ChannelSend",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/toolrpcOmniSendCoinRes"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "address",
-            "description": "user node pubKey",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "default": "025af4448f55bf1e6de1ae0486d4d103427c4e559a62ed7f8035bb1ed1af734f61"
-          },
-          {
-            "name": "assetId",
-            "description": "mainnet 2147484208; testnet 2147485160 ;regnet 2147483651 ",
-            "in": "query",
-            "required": true,
-            "type": "string",
-            "format": "int64",
-            "default": "2147485160"
-          }
-        ],
-        "tags": [
-          "tools"
-        ]
-      }
-    },
-    "/api/GetBalance/{address}": {
-      "get": {
-        "operationId": "tools_GetBalance",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/toolrpcOmniGetbalanceRes"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "address",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "default": "mtowceAw2yeftR1pPg15QcsDqsnSik7Spz"
-          },
-          {
-            "name": "propertyId",
-            "description": "mainnet 2147484208; testnet 2147485160 ;regnet 2147483651 ",
-            "in": "query",
-            "required": true,
-            "type": "string",
-            "format": "int64"
-          }
-        ],
-        "tags": [
-          "std"
-        ],
-        "externalDocs": {
-          "description": "Returns the token balance for a given address and property.",
-          "url": "https://githu以b.com/OmniLayer/omnicore/blob/master/src/omnicore/doc/rpc-api.md#omni_getbalance"
-        }
-      }
-    },
-    "/api/Mine": {
-      "get": {
-        "summary": "mine three block\nonly for regtest;  testnet or mainnet disabled",
-        "operationId": "tools_Mine",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/toolrpcOmniMineCoinRes"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "tags": [
-          "tools"
-        ]
-      }
-    },
-    "/api/Propertis": {
-      "get": {
-        "summary": "list all asset",
-        "operationId": "tools_ListProperties",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/toolrpcListPropertiesRes"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "tags": [
-          "std"
-        ],
-        "externalDocs": {
-          "description": "Lists all tokens or smart properties. \n To get the total number of tokens, please use omni_getproperty.",
-          "url": "https://github.com/OmniLayer/omnicore/blob/master/src/omnicore/doc/rpc-api.md#omni_listproperties"
-        }
-      },
-      "post": {
-        "summary": "create asset  cmd: omni_sendissuancefixed \"mtowceAw2yeftR1pPg15QcsDqsnSik7Spz\" 2 2 0 \"t1\" \"\" \"ftoken\" \"baidu.com\" \"\" 10000000000",
-        "operationId": "tools_CreateProperty",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/toolrpcCreatePropertyRes"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/toolrpcCreatePropertyReq"
-            }
-          }
-        ],
-        "tags": [
-          "std"
-        ],
-        "externalDocs": {
-          "description": "Create new tokens with fixed supply.",
-          "url": "https://github.com/OmniLayer/omnicore/blob/master/src/omnicore/doc/rpc-api.md#omni_sendissuancefixed"
-        }
-      }
-    },
-    "/api/Propertis/{propertyId}": {
-      "get": {
-        "summary": "query  Property",
-        "operationId": "tools_GetProperty",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/toolrpcOmniGetPropertyRes"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "propertyId",
-            "description": "mainnet 2147484208; testnet 2147485160 ;regnet 2147483651 ",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "int64"
-          }
-        ],
-        "tags": [
-          "std"
-        ],
-        "externalDocs": {
-          "description": "Returns the token balance for a given address and property.",
-          "url": "https://github.com/OmniLayer/omnicore/blob/master/src/omnicore/doc/rpc-api.md#omni_getbalance"
-        }
-      }
-    },
-    "/api/SendCoin/{address}": {
-      "get": {
-        "summary": "for regtest this command will send user one bitcoin  and 100 asset, and mine 3 blocks;\nfor testnet/mainnet this command will only send user 100 asset",
-        "operationId": "tools_SendCoin",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/toolrpcOmniSendCoinRes"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "address",
-            "description": "user node pubKey",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "default": "025af4448f55bf1e6de1ae0486d4d103427c4e559a62ed7f8035bb1ed1af734f61"
-          },
-          {
-            "name": "assetId",
-            "description": "mainnet 2147484208; testnet 2147485160 ;regnet 2147483651 ",
-            "in": "query",
-            "required": true,
-            "type": "string",
-            "format": "int64",
-            "default": "2147485160"
-          }
-        ],
-        "tags": [
-          "tools"
-        ]
-      }
-    }
-  },
+  "paths": {},
   "definitions": {
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "@type": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": {}
+    "HeartBeatMsgActionType": {
+      "type": "integer",
+      "format": "int32",
+      "enum": [
+        "0",
+        "1",
+        "2"
+      ],
+      "default": "0",
+      "title": "- 1: server send to client,for a invoice request\n - 2: client gen a invoice and  send to server"
     },
-    "rpcStatus": {
+    "googlerpcStatus": {
       "type": "object",
       "properties": {
         "code": {
@@ -294,177 +46,290 @@
         }
       }
     },
-    "toolrpcCreatePropertyReq": {
+    "protobufAny": {
       "type": "object",
       "properties": {
-        "fromaddress": {
-          "type": "string",
-          "example": "mtowceAw2yeftR1pPg15QcsDqsnSik7Spz",
-          "title": "the address to send from"
-        },
-        "name": {
-          "type": "string",
-          "example": "testToken",
-          "title": "a description for the new tokens (can be \"\")"
-        },
-        "amount": {
-          "type": "string",
-          "example": "100000000",
-          "title": "the number of tokens to create"
-        }
-      }
-    },
-    "toolrpcCreatePropertyRes": {
-      "type": "object",
-      "properties": {
-        "hash": {
+        "@type": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": {}
     },
-    "toolrpcListPropertiesRes": {
+    "toolrpcGetInvoiceBody": {
       "type": "object",
       "properties": {
-        "items": {
+        "assetId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "amt": {
+          "type": "string",
+          "format": "int64"
+        },
+        "spayId": {
+          "type": "string",
+          "format": "int64"
+        }
+      },
+      "title": "map to enum GETINVOICE"
+    },
+    "toolrpcGetInvoiceResBody": {
+      "type": "object",
+      "properties": {
+        "spayId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "payReq": {
+          "type": "string"
+        }
+      },
+      "title": "map to enum GETINVOICERES"
+    },
+    "toolrpcHeartBeatMsg": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "$ref": "#/definitions/HeartBeatMsgActionType"
+        },
+        "getInvoice": {
+          "$ref": "#/definitions/toolrpcGetInvoiceBody"
+        },
+        "getInvoiceRes": {
+          "$ref": "#/definitions/toolrpcGetInvoiceResBody"
+        },
+        "emptyBody": {
+          "properties": {}
+        }
+      }
+    },
+    "toolrpcListLuckItemRes": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "string",
+          "format": "int64"
+        },
+        "Items": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/toolrpcProperty"
+            "$ref": "#/definitions/toolrpcLuckItem"
           }
         }
       }
     },
-    "toolrpcOmniGetPropertyRes": {
+    "toolrpcListLuckPkRes": {
       "type": "object",
       "properties": {
-        "propertyid": {
+        "count": {
           "type": "string",
-          "format": "int64",
-          "default": "2147483651"
+          "format": "int64"
         },
-        "name": {
+        "Items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/toolrpcLuckPk"
+          }
+        }
+      }
+    },
+    "toolrpcLuckItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "luckpkId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "userId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "userAlias": {
           "type": "string"
         },
-        "category": {
-          "type": "string"
+        "amt": {
+          "type": "string",
+          "format": "int64"
         },
-        "subcategory": {
-          "type": "string"
+        "createdAt": {
+          "type": "string",
+          "format": "int64"
         },
-        "data": {
-          "type": "string"
+        "status": {
+          "$ref": "#/definitions/toolrpcLuckItemStatus"
         },
-        "url": {
-          "type": "string"
-        },
-        "divisible": {
-          "type": "boolean"
-        },
-        "issuer": {
-          "type": "string"
-        },
-        "creationtxid": {
-          "type": "string"
-        },
-        "fixedissuance": {
-          "type": "boolean"
-        },
-        "managedissuance": {
-          "type": "boolean"
-        },
-        "totaltokens": {
+        "ErrMsg": {
           "type": "string"
         }
       },
-      "description": "OmniGetPropertyRes models the data from the Omni-Getbalance command."
+      "title": "luckPackage will split to many LuckItem,one user one record"
     },
-    "toolrpcOmniGetbalanceRes": {
+    "toolrpcLuckItemStatus": {
+      "type": "integer",
+      "format": "int32",
+      "enum": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "default": "0",
+      "title": "- 1: server is paying user invoice\n - 2: server have paying user invoice"
+    },
+    "toolrpcLuckPKStatus": {
+      "type": "integer",
+      "format": "int32",
+      "enum": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "default": "0",
+      "title": "- 1: use have pay the LuckPk\n - 2: all balance was consumered"
+    },
+    "toolrpcLuckPk": {
       "type": "object",
       "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "userId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "userAlias": {
+          "type": "string"
+        },
+        "assetId": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "amt": {
+          "type": "string",
+          "format": "uint64",
+          "title": "precision　is 100000000"
+        },
         "balance": {
-          "type": "string"
+          "type": "string",
+          "format": "uint64",
+          "title": "precision　is 100000000"
         },
-        "reserved": {
-          "type": "string"
+        "PaymentHash": {
+          "type": "string",
+          "title": "fill on server side"
         },
-        "frozen": {
+        "parts": {
+          "type": "string",
+          "format": "uint64",
+          "description": "how many times the luckPk can be received. every receive-item save as LuckItem."
+        },
+        "gives": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "status": {
+          "$ref": "#/definitions/toolrpcLuckPKStatus"
+        },
+        "expiredTimeSec": {
+          "type": "string",
+          "format": "int64"
+        },
+        "invoice": {
+          "type": "string",
+          "title": "gen by server"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "int64"
+        },
+        "ErrorCreateMsg": {
           "type": "string"
         }
       },
-      "description": "OmniGetPropertyRes models the data from the Omni-Getbalance command."
+      "title": "luckPackage"
     },
-    "toolrpcOmniMineCoinRes": {
+    "toolrpcSpayStatus": {
+      "type": "integer",
+      "format": "int32",
+      "enum": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "default": "0",
+      "title": "- 1: user have payed service Invoice\n - 2: server have payed to user c"
+    },
+    "toolrpcspay": {
       "type": "object",
       "properties": {
-        "result": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "userInvoice": {
+          "type": "string",
+          "title": "user a create invoice,give to b,"
+        },
+        "servInvoice": {
+          "type": "string",
+          "title": "server b gen invoice, user a rcv it and give to c, user c will pay it"
+        },
+        "siPayHash": {
+          "type": "string",
+          "title": "server invoice hash"
+        },
+        "payerAddr": {
           "type": "string"
-        }
-      }
-    },
-    "toolrpcOmniSendCoinRes": {
-      "type": "object",
-      "properties": {
-        "result": {
-          "type": "string"
-        }
-      }
-    },
-    "toolrpcProperty": {
-      "type": "object",
-      "properties": {
-        "category": {
+        },
+        "expire": {
           "type": "string",
-          "example": "t1"
+          "format": "int64"
         },
-        "creationtxid": {
-          "type": "string",
-          "example": "b68f903ab36ed023f0c6b7c370b9281d8758d7b3c7835eda4a439018a64fc6d2"
-        },
-        "data": {
-          "type": "string",
-          "example": ""
-        },
-        "delegate": {
-          "type": "string",
-          "example": ""
-        },
-        "divisible": {
-          "type": "boolean",
-          "example": "true"
-        },
-        "fixedissuance": {
-          "type": "boolean",
-          "example": "true"
-        },
-        "issuer": {
-          "type": "string",
-          "example": "mtowceAw2yeftR1pPg15QcsDqsnSik7Spz"
-        },
-        "managedissuance": {
-          "type": "boolean",
-          "example": "false"
-        },
-        "name": {
-          "type": "string",
-          "example": "ftoken"
-        },
-        "nonFungibletoken": {
-          "type": "boolean",
-          "example": "false"
-        },
-        "propertyid": {
+        "userId": {
           "type": "string",
           "format": "int64",
-          "example": 2147483651
+          "title": "user a id , fill in server side;"
         },
-        "subcategory": {
+        "createdAt": {
           "type": "string",
-          "example": ""
+          "format": "int64"
         },
-        "url": {
+        "updatedAt": {
           "type": "string",
-          "example": "baidu.com"
+          "format": "int64"
+        },
+        "status": {
+          "$ref": "#/definitions/toolrpcSpayStatus"
+        },
+        "errMsg": {
+          "type": "string"
+        },
+        "errTimes": {
+          "type": "string",
+          "format": "int64"
+        },
+        "payerInvoice": {
+          "type": "string"
+        },
+        "assetId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "amt": {
+          "type": "string",
+          "format": "int64"
         }
-      }
+      },
+      "title": "spay:  substitution　pay"
     }
   }
 }

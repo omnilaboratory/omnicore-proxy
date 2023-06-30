@@ -344,9 +344,9 @@ func (l *LuckPkServer) refund(userKey string) {
 	spays := []*Spay{}
 	var err error
 	if len(userKey) > 0 {
-		err = db.Find(&spays, "payer_addr=? and status=? and Expire<? ", userKey, SpayStatus_UserPayed, time.Now().Unix()).Error
+		err = db.Find(&spays, "payer_addr=? and status=? and Expire<? and (payer_invoice<>'' and payer_invoice is not null)", userKey, SpayStatus_UserPayed, time.Now().Unix()).Error
 	} else {
-		err = db.Find(&spays, "payer_addr<>'' and status=? and Expire<?", SpayStatus_UserPayed, time.Now().Unix()).Error
+		err = db.Find(&spays, "status=? and Expire<? and (payer_invoice<>'' and payer_invoice is not null)", SpayStatus_UserPayed, time.Now().Unix()).Error
 	}
 	if err != nil {
 		log.Printf("refund skip with query spays err, user %v ", userKey)
@@ -361,7 +361,8 @@ func (l *LuckPkServer) refund(userKey string) {
 			continue
 		}
 		log.Printf("refund begin user %v ,id %v", spay.PayerAddr, spay.Id)
-		_, err := lndapi.SendpaymentRefund(l.lndCli, l.routerCli, spay.UserInvoice, spay.PayerAddr)
+		//_, err := lndapi.SendpaymentRefund(l.lndCli, l.routerCli, spay.UserInvoice, spay.PayerAddr)
+		_, err := lndapi.Sendpayment(l.lndCli, l.routerCli, spay.PayerInvoice)
 		if err != nil {
 			db.Model(spay).Updates(Spay{ErrMsg: err.Error(), ErrTimes: spay.ErrTimes + 1})
 			log.Printf("refund end with err user %v,id %v , %v", spay.PayerAddr, spay.Id, err)
@@ -510,6 +511,7 @@ func (l *LuckPkServer) HeartBeat(recStream LuckPkApi_HeartBeatServer) error {
 	case <-l.shudownChan.ShutdownChannel():
 		return errors.New("server is shutdowning")
 	default:
+
 		userId := getCtxUserid(recStream.Context())
 		addre := ""
 		p, ok := peer.FromContext(recStream.Context())
@@ -523,11 +525,32 @@ func (l *LuckPkServer) HeartBeat(recStream LuckPkApi_HeartBeatServer) error {
 		}
 		db.Save(hb)
 
-		//update online status
 		un := new(UserNode)
 		db.First(un, userId)
 		if un.ID > 0 {
+			//update online status
 			db.Model(un).Updates(UserNode{Online: 1, IpAddress: addre})
+
+			//send getinvoice to user
+			spays := []*Spay{}
+			err := db.Find(&spays, "payer_addr=? and status=? and Expire<? and (payer_invoice='' or payer_invoice is null) ", un.UserIdKey, SpayStatus_UserPayed, time.Now().Unix()).Error
+			if err != nil {
+				return err
+			}
+			if len(spays) > 0 {
+				for _, spay := range spays {
+					hbm := new(HeartBeatMsg)
+					hbm.Action = HeartBeatMsg_GETINVOICE
+					hbm.Body = &HeartBeatMsg_GetInvoice{
+						GetInvoice: &GetInvoiceBody{SpayId: spay.Id, AssetId: spay.AssetId, Amt: spay.Amt},
+					}
+					err := recStream.Send(hbm)
+					if err != nil {
+						return err
+					}
+				}
+			}
+
 			log.Printf("trigger user spay %v %v", un.ID, un.UserIdKey)
 			l.runUserSpay(userId)
 			log.Printf("trigger user spay end %v %v", un.ID, un.UserIdKey)
@@ -552,10 +575,59 @@ func (l *LuckPkServer) HeartBeat(recStream LuckPkApi_HeartBeatServer) error {
 			case <-l.shudownChan.ShutdownChannel():
 				log.Println("shudown HeartBeat user", un.ID)
 				return nil
+
 			case recv := <-msgChan:
 				{
 					if recv.Err != nil {
 						return recv.Err
+					}
+					//hbm, err := recStream.Recv()
+					hbm := recv.Obj.(*HeartBeatMsg)
+					switch hbm.Action {
+					case HeartBeatMsg_GETINVOICE_RES:
+						log.Println("recv GIVEINVOICE msg")
+						res := hbm.GetGetInvoiceRes()
+
+						spay := &Spay{}
+						err := db.First(spay, res.SpayId).Error
+						if err != nil {
+							return err
+						}
+						//check PayerInvoice amt
+						refundInvoice, err := l.lndCli.DecodePayReq(context.TODO(), &lnrpc.PayReqString{PayReq: res.PayReq})
+						if err != nil {
+							return err
+						}
+						amt := refundInvoice.Amount
+						if refundInvoice.AssetId == 0 {
+							amt = refundInvoice.AmtMsat / 1000
+						}
+						//spay.Amt is new field ;  old spay.amt is zero
+						if spay.Amt == 0 {
+							userInvoice, err := l.lndCli.DecodePayReq(context.TODO(), &lnrpc.PayReqString{PayReq: spay.UserInvoice})
+							if err != nil {
+								return err
+							}
+
+							userAmt := userInvoice.Amount
+							if userInvoice.AssetId == 0 {
+								userAmt = userInvoice.AmtMsat / 1000
+							}
+							spay.Amt = userAmt
+							spay.AssetId = userInvoice.AssetId
+						}
+
+						if amt != spay.Amt {
+							errMsg := fmt.Sprintf("err invoice amt except %v got %v", spay.Amt, amt)
+							log.Println(errMsg)
+							return errors.New(errMsg)
+						}
+
+						spay.PayerInvoice = res.PayReq
+						db.Save(spay)
+						log.Println("update payerInvoice", res.SpayId)
+						l.refund(un.UserIdKey)
+					case HeartBeatMsg_Empty:
 					}
 				}
 				//default:
@@ -564,6 +636,7 @@ func (l *LuckPkServer) HeartBeat(recStream LuckPkApi_HeartBeatServer) error {
 				//		log.Println("recStream.Recv err", err)
 				//		return err
 				//	}
+
 			}
 
 		}
@@ -689,6 +762,9 @@ func (l *LuckPkServer) CreateSpay(ctx context.Context, sy *Spay) (*Spay, error) 
 	sy.ServInvoice = servInvoice.PaymentRequest
 	sy.SiPayHash = hex.EncodeToString(servInvoice.RHash)
 	sy.UserId = getCtxUserid(ctx)
+	sy.AssetId = userInvoice.AssetId
+	sy.Amt = amt
+
 	err = db.Save(sy).Error
 	return sy, err
 }
