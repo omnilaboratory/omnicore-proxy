@@ -551,12 +551,15 @@ func (l *LuckPkServer) HeartBeat(recStream LuckPkApi_HeartBeatServer) error {
 				}
 			}
 
-			log.Printf("trigger user spay %v %v", un.ID, un.UserIdKey)
-			l.runUserSpay(userId)
-			log.Printf("trigger user spay end %v %v", un.ID, un.UserIdKey)
-			log.Printf("trigger user refund %v %v", un.ID, un.UserIdKey)
-			l.refund(un.UserIdKey)
-			log.Printf("trigger user end %v %v", un.ID, un.UserIdKey)
+			go func() {
+				time.Sleep(10 * time.Second)
+				log.Printf("trigger user spay %v %v", un.ID, un.UserIdKey)
+				l.runUserSpay(userId)
+				log.Printf("trigger user spay end %v %v", un.ID, un.UserIdKey)
+				log.Printf("trigger user refund %v %v", un.ID, un.UserIdKey)
+				l.refund(un.UserIdKey)
+				log.Printf("trigger user end %v %v", un.ID, un.UserIdKey)
+			}()
 		}
 		defer func() {
 			now := time.Now()
@@ -626,7 +629,11 @@ func (l *LuckPkServer) HeartBeat(recStream LuckPkApi_HeartBeatServer) error {
 						spay.PayerInvoice = res.PayReq
 						db.Save(spay)
 						log.Println("update payerInvoice", res.SpayId)
-						l.refund(un.UserIdKey)
+						go func() {
+							time.Sleep(3 * time.Second)
+							l.refund(un.UserIdKey)
+						}()
+
 					case HeartBeatMsg_Empty:
 					}
 				}
@@ -755,7 +762,7 @@ func (l *LuckPkServer) CreateSpay(ctx context.Context, sy *Spay) (*Spay, error) 
 		amt = userInvoice.AmtMsat / 1000
 	}
 
-	servInvoice, err := lndapi.AddInvoice(l.lndCli, uint32(userInvoice.AssetId), amt, 1)
+	servInvoice, err := lndapi.AddInvoice(l.lndCli, uint32(userInvoice.AssetId), amt, userInvoice.Expiry)
 	if err != nil {
 		return nil, err
 	}
@@ -798,7 +805,7 @@ func (l *LuckPkServer) ListLuckPk(ctx context.Context, req *ListLuckPkReq) (*Lis
 }
 
 func (l *LuckPkServer) CreateLuckPk(ctx context.Context, pk *LuckPk) (*LuckPk, error) {
-	res, err := lndapi.AddInvoice(l.lndCli, uint32(pk.AssetId), int64(pk.Amt), 1)
+	res, err := lndapi.AddInvoice(l.lndCli, uint32(pk.AssetId), int64(pk.Amt), 3600*24)
 	if err != nil {
 		return nil, err
 	}

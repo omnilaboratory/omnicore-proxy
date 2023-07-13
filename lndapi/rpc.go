@@ -13,7 +13,7 @@ import (
 	"github.com/lightningnetwork/lnd/record"
 )
 
-func AddInvoice(lcli lnrpc.LightningClient, assetId uint32, amount int64, expire_day int64) (*lnrpc.AddInvoiceResponse, error) {
+func AddInvoice(lcli lnrpc.LightningClient, assetId uint32, amount int64, expire_sec int64) (*lnrpc.AddInvoiceResponse, error) {
 
 	valueMsat := int64(0)
 	amt := int64(0)
@@ -22,7 +22,7 @@ func AddInvoice(lcli lnrpc.LightningClient, assetId uint32, amount int64, expire
 	} else {
 		valueMsat = amount * 1000
 	}
-	in := &lnrpc.Invoice{AssetId: assetId, ValueMsat: valueMsat, Amount: amt, Expiry: 3600 * 24 * expire_day, Refundable: true}
+	in := &lnrpc.Invoice{AssetId: assetId, ValueMsat: valueMsat, Amount: amt, Expiry: expire_sec, Refundable: true}
 	return lcli.OB_AddInvoice(context.TODO(), in)
 }
 
