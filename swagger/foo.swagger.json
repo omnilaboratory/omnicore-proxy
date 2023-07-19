@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "toolrpc/luckPk1.proto",
+    "title": "toolrpc/luckPk.proto",
     "version": "version not set"
   },
   "tags": [
@@ -316,6 +316,10 @@
         "errTimes": {
           "type": "string",
           "format": "int64"
+        },
+        "paySpend": {
+          "type": "number",
+          "format": "double"
         },
         "payerInvoice": {
           "type": "string"

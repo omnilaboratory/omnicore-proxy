@@ -44,6 +44,7 @@ message spay{
   SpayStatus status = 7;
   string err_msg = 8;
   int64  errTimes=9;
+  double pay_spend =16;
 
   string payer_invoice = 13;
   uint32 asset_id =14;

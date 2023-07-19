@@ -100,7 +100,7 @@ func Sendpayment(lcli lnrpc.LightningClient, rcli routerrpc.RouterClient, payReq
 	req.FeeLimitMsat = feeLimit
 
 	req.NoInflightUpdates = true
-	req.TimeoutSeconds = 5
+	req.TimeoutSeconds = 100
 	stream, err := rcli.OB_SendPaymentV2(context.TODO(), req)
 	if err != nil {
 		return false, err

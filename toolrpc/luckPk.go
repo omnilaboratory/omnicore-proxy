@@ -14,6 +14,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm/logger"
 	"io"
+	"math"
 	"om-rpc-tool/lndapi"
 	"om-rpc-tool/signal"
 	"os"
@@ -311,15 +312,18 @@ func (l *LuckPkServer) runUserSpay(userId int64) {
 	if err == nil {
 		for _, spay := range spays {
 			log.Printf("runUserSpay begin send userId %d,spay.id %d", userId, spay.Id)
+			stime := time.Now()
 			_, err := lndapi.Sendpayment(l.lndCli, l.routerCli, spay.UserInvoice)
+			spendTime := time.Now().Sub(stime).Seconds()
+			spendTime = math.Round(spendTime*10) / 10
 			if err != nil {
-				db.Model(spay).Updates(Spay{ErrMsg: err.Error(), ErrTimes: spay.ErrTimes + 1})
+				db.Model(spay).Updates(Spay{ErrMsg: err.Error(), ErrTimes: spay.ErrTimes + 1, PaySpend: spendTime})
 				log.Printf("runUserSpay err userId %d,spay.id %d,  err %v", userId, spay.Id, err)
 				continue
 				//return
 			}
 			log.Printf("runUserSpay complete userId %d,spay.id %d", userId, spay.Id)
-			err = db.Model(spay).Updates(Spay{Status: SpayStatus_PayEnd}).Error
+			err = db.Model(spay).Updates(Spay{Status: SpayStatus_PayEnd, PaySpend: spendTime}).Error
 			if err != nil {
 				return
 			}
@@ -361,14 +365,17 @@ func (l *LuckPkServer) refund(userKey string) {
 			continue
 		}
 		log.Printf("refund begin user %v ,id %v", spay.PayerAddr, spay.Id)
+		stime := time.Now()
 		//_, err := lndapi.SendpaymentRefund(l.lndCli, l.routerCli, spay.UserInvoice, spay.PayerAddr)
 		_, err := lndapi.Sendpayment(l.lndCli, l.routerCli, spay.PayerInvoice)
+		spendTime := time.Now().Sub(stime).Seconds()
+		spendTime = math.Round(spendTime*10) / 10
 		if err != nil {
-			db.Model(spay).Updates(Spay{ErrMsg: err.Error(), ErrTimes: spay.ErrTimes + 1})
+			db.Model(spay).Updates(Spay{ErrMsg: err.Error(), ErrTimes: spay.ErrTimes + 1, PaySpend: spendTime})
 			log.Printf("refund end with err user %v,id %v , %v", spay.PayerAddr, spay.Id, err)
 			return
 		}
-		err = db.Model(spay).Updates(Spay{Status: SpayStatus_Refunded}).Error
+		err = db.Model(spay).Updates(Spay{Status: SpayStatus_Refunded, PaySpend: spendTime}).Error
 		if err != nil {
 			return
 		}
